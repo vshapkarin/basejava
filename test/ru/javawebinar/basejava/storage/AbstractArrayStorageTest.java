@@ -3,11 +3,10 @@ package ru.javawebinar.basejava.storage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.javawebinar.basejava.exception.ExistStorageException;
 import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.exception.StorageException;
 import ru.javawebinar.basejava.model.Resume;
-
-import java.util.Arrays;
 
 public abstract class AbstractArrayStorageTest {
     private Storage storage;
@@ -15,17 +14,22 @@ public abstract class AbstractArrayStorageTest {
     private static final String UUID_1 = "uuid1";
     private static final String UUID_2 = "uuid2";
     private static final String UUID_3 = "uuid3";
+    private static final String DUMMY = "dummy";
+    private static final Resume r1 = new Resume(UUID_1);
+    private static final Resume r2 = new Resume(UUID_2);
+    private static final Resume r3 = new Resume(UUID_3);
+    private static final Resume r4 = new Resume(DUMMY);
 
-    public AbstractArrayStorageTest(Class storage) throws IllegalAccessException, InstantiationException {
-        this.storage = (Storage) storage.newInstance();
+    protected AbstractArrayStorageTest(Storage storage) {
+        this.storage = storage;
     }
 
     @Before
     public void setUp() {
         storage.clear();
-        storage.save(new Resume(UUID_1));
-        storage.save(new Resume(UUID_2));
-        storage.save(new Resume(UUID_3));
+        storage.save(r1);
+        storage.save(r2);
+        storage.save(r3);
     }
 
     @Test
@@ -41,50 +45,69 @@ public abstract class AbstractArrayStorageTest {
 
     @Test
     public void update() {
-        Resume r = new Resume(UUID_1);
-        storage.update(r);
+        storage.update(r1);
+        Assert.assertEquals(r1, storage.get(UUID_1));
+    }
+
+    @Test(expected = NotExistStorageException.class)
+    public void updateNotExist() {
+        storage.update(r4);
     }
 
     @Test
-    public void getAll() throws Exception {
-        Resume[] reflectionStorage = (Resume[]) AbstractArrayStorage.class.getDeclaredField("storage").get(storage);
-        reflectionStorage = Arrays.copyOf(reflectionStorage, storage.size());
-        Assert.assertArrayEquals(reflectionStorage, storage.getAll());
+    public void getAll() {
+        Resume[] resumeTest = {r1, r2, r3};
+        Assert.assertArrayEquals(resumeTest, storage.getAll());
+    }
+
+    @Test
+    public void save() {
+        storage.save(r4);
+        Assert.assertEquals(4, storage.size());
+        storage.get(DUMMY);
+    }
+
+    @Test(expected = ExistStorageException.class)
+    public void saveExist() {
+        storage.save(r1);
     }
 
     @Test(expected = StorageException.class)
-    public void save() {
+    public void saveOverFlow() {
+        storage.clear();
         try {
-            for (int i = 0; i < 10000 - 3; i++) {
-                storage.save(new Resume("newUuid" + i ));
+            for (int i = 0; i < AbstractArrayStorage.STORAGE_LIMIT; i++) {
+                storage.save(new Resume("newUuid" + i));
             }
-        } catch (Exception c) {
-            Assert.fail();
+        } catch (StorageException c) {
+            Assert.fail("Error filling array");
         }
 
-        Assert.assertEquals(10000, storage.size());
+        Assert.assertEquals(AbstractArrayStorage.STORAGE_LIMIT, storage.size());
         storage.save(new Resume(""));
     }
 
     @Test(expected = NotExistStorageException.class)
     public void delete() {
-        storage.delete("dummy");
-        storage.delete("uuid1");
-        storage.delete("uuid2");
-        storage.delete("uuid3");
-        Assert.assertEquals(0, storage.size());
+        storage.delete(UUID_1);
+        Assert.assertEquals(2, storage.size());
+        storage.get(UUID_1);
+    }
+
+    @Test(expected = NotExistStorageException.class)
+    public void deleteNotExist() {
+        storage.delete(DUMMY);
     }
 
     @Test
-    public void get() throws Exception {
-        Resume[] reflectionStorage = (Resume[]) AbstractArrayStorage.class.getDeclaredField("storage").get(storage);
-        Assert.assertEquals(reflectionStorage[0], storage.get(UUID_1));
-        Assert.assertEquals(reflectionStorage[1], storage.get(UUID_2));
-        Assert.assertEquals(reflectionStorage[2], storage.get(UUID_3));
+    public void get() {
+        Assert.assertEquals(r1, storage.get(UUID_1));
+        Assert.assertEquals(r2, storage.get(UUID_2));
+        Assert.assertEquals(r3, storage.get(UUID_3));
     }
 
     @Test(expected = NotExistStorageException.class)
     public void getNotExist() {
-        storage.get("dummy");
+        storage.get(DUMMY);
     }
 }
