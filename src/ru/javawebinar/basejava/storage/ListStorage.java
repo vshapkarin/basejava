@@ -25,12 +25,12 @@ public class ListStorage extends AbstractStorage {
     }
 
     @Override
-    protected void remove(int index) {
+    protected void removeByIndex(int index) {
         storage.remove(index);
     }
 
     @Override
-    protected void store(Resume r, int index) {
+    protected void storeByIndex(Resume r, int index) {
         storage.add(r);
     }
 
@@ -52,7 +52,7 @@ public class ListStorage extends AbstractStorage {
     }
 
     @Override
-    protected void replaceIn(int index, Resume r) {
+    protected void replaceInIndex(int index, Resume r) {
         storage.set(index, r);
     }
 }

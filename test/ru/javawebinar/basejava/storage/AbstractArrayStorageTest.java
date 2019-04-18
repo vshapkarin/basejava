@@ -83,9 +83,11 @@ public abstract class AbstractArrayStorageTest {
         } catch (StorageException c) {
             Assert.fail("Error filling array");
         }
-
         Assert.assertEquals(AbstractArrayStorage.STORAGE_LIMIT, storage.size());
         storage.save(new Resume(""));
+        if (storage instanceof ListStorage || storage instanceof MapStorage) {
+            throw new StorageException("Collections can't be overflow, test passed", "");
+        }
     }
 
     @Test(expected = NotExistStorageException.class)

@@ -12,7 +12,7 @@ public abstract class AbstractStorage implements Storage {
         if (index < 0) {
             throw new NotExistStorageException(r.getUuid());
         } else {
-            replaceIn(index, r);
+            replaceInIndex(index, r);
         }
     }
 
@@ -22,7 +22,7 @@ public abstract class AbstractStorage implements Storage {
         if (index >= 0) {
             throw new ExistStorageException(r.getUuid());
         } else {
-            store(r, index);
+            storeByIndex(r, index);
         }
     }
 
@@ -41,17 +41,17 @@ public abstract class AbstractStorage implements Storage {
         if (index < 0) {
             throw new NotExistStorageException(uuid);
         } else {
-            remove(index);
+            removeByIndex(index);
         }
     }
 
-    protected abstract void remove(int index);
+    protected abstract void removeByIndex(int index);
 
-    protected abstract void store(Resume r, int index);
+    protected abstract void storeByIndex(Resume r, int index);
 
     protected abstract Resume getResumeByIndex(int index);
 
     protected abstract int getIndex(String uuid);
 
-    protected abstract void replaceIn(int index, Resume r);
+    protected abstract void replaceInIndex(int index, Resume r);
 }
