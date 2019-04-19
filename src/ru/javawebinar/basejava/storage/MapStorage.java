@@ -2,7 +2,6 @@ package ru.javawebinar.basejava.storage;
 
 import ru.javawebinar.basejava.model.Resume;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -26,57 +25,32 @@ public class MapStorage extends AbstractStorage {
     }
 
     @Override
-    protected void removeByIndex(int index) {
-        int counter = 0;
-        Iterator entryIterator = storage.entrySet().iterator();
-        while(entryIterator.hasNext()) {
-            entryIterator.next();
-            if (counter == index) {
-                entryIterator.remove();
-                return;
-            }
-            counter++;
-        }
+    protected void removeBySearchKey(Object searchKey) {
+        storage.remove(searchKey);
     }
 
     @Override
-    protected void storeByIndex(Resume r, int index) {
+    protected void storeBySearchKey(Resume r, Object searchKey) {
         storage.put(r.getUuid(), r);
     }
 
     @Override
-    protected Resume getResumeByIndex(int index) {
-        int counter = 0;
-        for (Map.Entry<String, Resume> entry : storage.entrySet()) {
-            if (counter == index) {
-                return entry.getValue();
-            }
-            counter++;
-        }
-        return null;
+    protected Resume getResumeBySearchKey(Object searchKey) {
+        return storage.get(searchKey);
     }
 
     @Override
-    protected int getIndex(String uuid) {
-        int index = 0;
-        for (Map.Entry<String, Resume> entry : storage.entrySet()) {
-            if (entry.getKey() == uuid) {
-                return index;
-            }
-            index++;
-        }
-        return -1;
+    protected Object getSearchKey(String uuid) {
+        return uuid;
     }
 
     @Override
-    protected void replaceInIndex(int index, Resume r) {
-        int counter = 0;
-        for (Map.Entry<String, Resume> entry : storage.entrySet()) {
-            if (counter == index) {
-                storage.replace(entry.getKey(), r);
-                return;
-            }
-            counter++;
-        }
+    protected void replaceInSearchKey(Object searchKey, Resume r) {
+        storage.replace((String) searchKey, r);
+    }
+
+    @Override
+    protected boolean checkForExistence(Object searchKey) {
+        return storage.containsKey(searchKey);
     }
 }

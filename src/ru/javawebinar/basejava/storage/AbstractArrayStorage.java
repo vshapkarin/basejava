@@ -31,30 +31,40 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
     }
 
     @Override
-    protected void removeByIndex(int index) {
+    protected void removeBySearchKey(Object searchKey) {
+        int index = (Integer) searchKey;
         removeFromArray(index);
         storage[size - 1] = null;
         size--;
     }
 
     @Override
-    protected void storeByIndex(Resume r, int index) {
+    protected void storeBySearchKey(Resume r, Object searchKey) {
         if (size >= STORAGE_LIMIT) {
             throw new StorageException("Storage overflow", r.getUuid());
         } else {
+            int index = (Integer) searchKey;
             storeInArray(r, index);
             size++;
         }
     }
 
     @Override
-    protected Resume getResumeByIndex(int index) {
+    protected Resume getResumeBySearchKey(Object searchKey)
+    {
+        int index = (Integer) searchKey;
         return storage[index];
     }
 
     @Override
-    protected void replaceInIndex(int index, Resume r) {
+    protected void replaceInSearchKey(Object searchKey, Resume r) {
+        int index = (Integer) searchKey;
         storage[index] = r;
+    }
+
+    @Override
+    protected boolean checkForExistence(Object searchKey) {
+        return (Integer) searchKey >= 0;
     }
 
     protected abstract void storeInArray(Resume r, int index);

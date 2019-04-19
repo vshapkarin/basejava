@@ -8,50 +8,52 @@ public abstract class AbstractStorage implements Storage {
 
     @Override
     public void update(Resume r) {
-        int index = getIndex(r.getUuid());
-        if (index < 0) {
+        Object searchKey = getSearchKey(r.getUuid());
+        if (!checkForExistence(searchKey)) {
             throw new NotExistStorageException(r.getUuid());
         } else {
-            replaceInIndex(index, r);
+            replaceInSearchKey(searchKey, r);
         }
     }
 
     @Override
     public void save(Resume r) {
-        int index = getIndex(r.getUuid());
-        if (index >= 0) {
+        Object searchKey = getSearchKey(r.getUuid());
+        if (checkForExistence(searchKey)) {
             throw new ExistStorageException(r.getUuid());
         } else {
-            storeByIndex(r, index);
+            storeBySearchKey(r, searchKey);
         }
     }
 
     @Override
     public Resume get(String uuid) {
-        int index = getIndex(uuid);
-        if (index < 0) {
+        Object searchKey = getSearchKey(uuid);
+        if (!checkForExistence(searchKey)) {
             throw new NotExistStorageException(uuid);
         }
-        return getResumeByIndex(index);
+        return getResumeBySearchKey(searchKey);
     }
 
     @Override
     public void delete(String uuid) {
-        int index = getIndex(uuid);
-        if (index < 0) {
+        Object searchKey = getSearchKey(uuid);
+        if (!checkForExistence(searchKey)) {
             throw new NotExistStorageException(uuid);
         } else {
-            removeByIndex(index);
+            removeBySearchKey(searchKey);
         }
     }
 
-    protected abstract void removeByIndex(int index);
+    protected abstract void removeBySearchKey(Object searchKey);
 
-    protected abstract void storeByIndex(Resume r, int index);
+    protected abstract void storeBySearchKey(Resume r, Object searchKey);
 
-    protected abstract Resume getResumeByIndex(int index);
+    protected abstract Resume getResumeBySearchKey(Object searchKey);
 
-    protected abstract int getIndex(String uuid);
+    protected abstract Object getSearchKey(String uuid);
 
-    protected abstract void replaceInIndex(int index, Resume r);
+    protected abstract void replaceInSearchKey(Object searchKey, Resume r);
+
+    protected abstract boolean checkForExistence(Object searchKey);
 }
