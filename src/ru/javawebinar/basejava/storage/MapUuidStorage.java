@@ -2,11 +2,10 @@ package ru.javawebinar.basejava.storage;
 
 import ru.javawebinar.basejava.model.Resume;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
-public class MapStorage extends AbstractStorage {
-    Map<String, Resume> storage = new LinkedHashMap<>();
+public class MapUuidStorage extends AbstractStorage {
+    private Map<String, Resume> storage = new HashMap<>();
 
     @Override
     public void clear() {
@@ -14,9 +13,10 @@ public class MapStorage extends AbstractStorage {
     }
 
     @Override
-    public Resume[] getAll() {
-        Resume[] resumes = new Resume[storage.size()];
-        return storage.values().toArray(resumes);
+    public List<Resume> getAllSorted() {
+        List<Resume> storageValues = new ArrayList<>(storage.values());
+        Collections.sort(storageValues);
+        return storageValues;
     }
 
     @Override
@@ -40,8 +40,8 @@ public class MapStorage extends AbstractStorage {
     }
 
     @Override
-    protected Object getSearchKey(String uuid) {
-        return uuid;
+    protected Object getSearchKey(String searchKey) {
+        return searchKey;
     }
 
     @Override

@@ -4,6 +4,8 @@ import ru.javawebinar.basejava.exception.StorageException;
 import ru.javawebinar.basejava.model.Resume;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Array based storage for Resumes
@@ -21,8 +23,10 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
     }
 
     @Override
-    public Resume[] getAll() {
-        return Arrays.copyOf(storage, size);
+    public List<Resume> getAllSorted() {
+        List<Resume> list = Arrays.asList(Arrays.copyOf(storage, size));
+        Collections.sort(list);
+        return list;
     }
 
     @Override
@@ -31,40 +35,36 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
     }
 
     @Override
-    protected void removeBySearchKey(Object searchKey) {
-        int index = (Integer) searchKey;
-        removeFromArray(index);
+    protected void removeBySearchKey(Object index) {
+        removeFromArray((Integer) index);
         storage[size - 1] = null;
         size--;
     }
 
     @Override
-    protected void storeBySearchKey(Resume r, Object searchKey) {
+    protected void storeBySearchKey(Resume r, Object index) {
         if (size >= STORAGE_LIMIT) {
             throw new StorageException("Storage overflow", r.getUuid());
         } else {
-            int index = (Integer) searchKey;
-            storeInArray(r, index);
+            storeInArray(r, (Integer) index);
             size++;
         }
     }
 
     @Override
-    protected Resume getResumeBySearchKey(Object searchKey)
+    protected Resume getResumeBySearchKey(Object index)
     {
-        int index = (Integer) searchKey;
-        return storage[index];
+        return storage[(Integer) index];
     }
 
     @Override
-    protected void replaceInSearchKey(Object searchKey, Resume r) {
-        int index = (Integer) searchKey;
-        storage[index] = r;
+    protected void replaceInSearchKey(Object index, Resume r) {
+        storage[(Integer) index] = r;
     }
 
     @Override
-    protected boolean checkForExistence(Object searchKey) {
-        return (Integer) searchKey >= 0;
+    protected boolean checkForExistence(Object index) {
+        return (Integer) index >= 0;
     }
 
     protected abstract void storeInArray(Resume r, int index);

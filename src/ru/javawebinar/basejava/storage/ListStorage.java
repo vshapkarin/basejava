@@ -3,10 +3,11 @@ package ru.javawebinar.basejava.storage;
 import ru.javawebinar.basejava.model.Resume;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ListStorage extends AbstractStorage {
-    List<Resume> storage = new ArrayList<>();
+    private List<Resume> storage = new ArrayList<>();
 
     @Override
     public void clear() {
@@ -14,9 +15,10 @@ public class ListStorage extends AbstractStorage {
     }
 
     @Override
-    public Resume[] getAll() {
-        Resume[] resumes = new Resume[storage.size()];
-        return storage.toArray(resumes);
+    public List<Resume> getAllSorted() {
+        List<Resume> storageClone = storage.subList(0, storage.size());
+        Collections.sort(storageClone);
+        return storageClone;
     }
 
     @Override
@@ -25,27 +27,25 @@ public class ListStorage extends AbstractStorage {
     }
 
     @Override
-    protected void removeBySearchKey(Object searchKey) {
-        int index = (Integer) searchKey;
-        storage.remove(index);
+    protected void removeBySearchKey(Object index) {
+        storage.remove(((Integer) index).intValue());
     }
 
     @Override
-    protected void storeBySearchKey(Resume r, Object searchKey) {
+    protected void storeBySearchKey(Resume r, Object index) {
         storage.add(r);
     }
 
     @Override
     protected Resume getResumeBySearchKey(Object searchKey) {
-        int index = (Integer) searchKey;
-        return storage.get(index);
+        return storage.get((Integer) searchKey);
     }
 
     @Override
     protected Object getSearchKey(String uuid) {
         int index = 0;
         for (Resume r : storage) {
-            if (r.getUuid() == uuid) {
+            if (r.getUuid().equals(uuid)) {
                 return index;
             }
             index++;
@@ -54,13 +54,12 @@ public class ListStorage extends AbstractStorage {
     }
 
     @Override
-    protected void replaceInSearchKey(Object searchKey, Resume r) {
-        int index = (Integer) searchKey;
-        storage.set(index, r);
+    protected void replaceInSearchKey(Object index, Resume r) {
+        storage.set((Integer) index, r);
     }
 
     @Override
-    protected boolean checkForExistence(Object searchKey) {
-        return (Integer) searchKey >= 0;
+    protected boolean checkForExistence(Object index) {
+        return (Integer) index >= 0;
     }
 }
