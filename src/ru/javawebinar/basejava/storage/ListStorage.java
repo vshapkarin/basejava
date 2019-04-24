@@ -3,7 +3,6 @@ package ru.javawebinar.basejava.storage;
 import ru.javawebinar.basejava.model.Resume;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class ListStorage extends AbstractStorage {
@@ -12,13 +11,6 @@ public class ListStorage extends AbstractStorage {
     @Override
     public void clear() {
         storage.clear();
-    }
-
-    @Override
-    public List<Resume> getAllSorted() {
-        List<Resume> storageClone = storage.subList(0, storage.size());
-        Collections.sort(storageClone);
-        return storageClone;
     }
 
     @Override
@@ -32,8 +24,8 @@ public class ListStorage extends AbstractStorage {
     }
 
     @Override
-    protected void storeBySearchKey(Resume r, Object index) {
-        storage.add(r);
+    protected void storeBySearchKey(Resume resume, Object index) {
+        storage.add(resume);
     }
 
     @Override
@@ -43,19 +35,22 @@ public class ListStorage extends AbstractStorage {
 
     @Override
     protected Object getSearchKey(String uuid) {
-        int index = 0;
-        for (Resume r : storage) {
-            if (r.getUuid().equals(uuid)) {
-                return index;
+        for (int i = 0; i < storage.size(); i++) {
+            if (storage.get(i).getUuid().equals(uuid)) {
+                return i;
             }
-            index++;
         }
         return -1;
     }
 
     @Override
-    protected void replaceInSearchKey(Object index, Resume r) {
-        storage.set((Integer) index, r);
+    protected List<Resume> getList() {
+        return storage.subList(0, storage.size());
+    }
+
+    @Override
+    protected void replaceInSearchKey(Object index, Resume resume) {
+        storage.set((Integer) index, resume);
     }
 
     @Override

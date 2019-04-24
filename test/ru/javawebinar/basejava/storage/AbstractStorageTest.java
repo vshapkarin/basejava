@@ -8,7 +8,7 @@ import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.Resume;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -19,12 +19,15 @@ public abstract class AbstractStorageTest {
     private static final String UUID_1 = "uuid1";
     private static final String UUID_2 = "uuid2";
     private static final String UUID_3 = "uuid3";
+    private static final String NAME_1 = "Bruce Benner";
+    private static final String NAME_2 = "Tony Stark";
+    private static final String NAME_3 = "Thor Odinsson";
     private static final String DUMMY = "dummy";
-    private static final Resume R1 = new Resume(UUID_1);
-    private static final Resume R2 = new Resume(UUID_2);
-    private static final Resume R3 = new Resume(UUID_3);
-    private static final Resume R4 = new Resume(DUMMY);
-    private static final Resume R5 = new Resume("uuid1");
+    private static final Resume R1 = new Resume(UUID_1, NAME_1);
+    private static final Resume R2 = new Resume(UUID_2, NAME_2);
+    private static final Resume R3 = new Resume(UUID_3, NAME_3);
+    private static final Resume R4 = new Resume(DUMMY, DUMMY);
+    private static final Resume R5 = new Resume(UUID_1, DUMMY);
 
     protected AbstractStorageTest(Storage storage) {
         this.storage = storage;
@@ -66,7 +69,7 @@ public abstract class AbstractStorageTest {
         resumeTest.add(R1);
         resumeTest.add(R2);
         resumeTest.add(R3);
-        resumeTest.sort((Comparator.comparing(Resume::getFullName).thenComparing(Resume::getUuid)));
+        Collections.sort(resumeTest);
         Assert.assertThat(resumeTest, is(storage.getAllSorted()));
     }
 
