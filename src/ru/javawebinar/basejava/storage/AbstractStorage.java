@@ -11,25 +11,25 @@ public abstract class AbstractStorage implements Storage {
 
     @Override
     public void update(Resume resume) {
-        Object searchKey = getExistingKey(resume.getUuid());
+        Object searchKey = getExistSearchKey(resume.getUuid());
         replaceInSearchKey(searchKey, resume);
     }
 
     @Override
     public void save(Resume resume) {
-        Object searchKey = getNotExistingKey(resume.getUuid());
+        Object searchKey = getNotExistSearchKey(resume.getUuid());
         storeBySearchKey(resume, searchKey);
     }
 
     @Override
     public Resume get(String uuid) {
-        Object searchKey = getExistingKey(uuid);
+        Object searchKey = getExistSearchKey(uuid);
         return getResumeBySearchKey(searchKey);
     }
 
     @Override
     public void delete(String uuid) {
-        Object searchKey = getExistingKey(uuid);
+        Object searchKey = getExistSearchKey(uuid);
         removeBySearchKey(searchKey);
     }
 
@@ -39,7 +39,7 @@ public abstract class AbstractStorage implements Storage {
         return list;
     }
 
-    private Object getExistingKey(String uuid) {
+    private Object getExistSearchKey(String uuid) {
         Object searchKey = getSearchKey(uuid);
         if (!checkForExistence(searchKey)) {
             throw new NotExistStorageException(uuid);
@@ -47,7 +47,7 @@ public abstract class AbstractStorage implements Storage {
         return searchKey;
     }
 
-    private Object getNotExistingKey(String uuid) {
+    private Object getNotExistSearchKey(String uuid) {
         Object searchKey = getSearchKey(uuid);
         if (checkForExistence(searchKey)) {
             throw new ExistStorageException(uuid);
@@ -57,7 +57,7 @@ public abstract class AbstractStorage implements Storage {
 
     protected abstract void removeBySearchKey(Object searchKey);
 
-    protected abstract void storeBySearchKey(Resume r, Object searchKey);
+    protected abstract void storeBySearchKey(Resume resume, Object searchKey);
 
     protected abstract Resume getResumeBySearchKey(Object searchKey);
 
@@ -65,7 +65,7 @@ public abstract class AbstractStorage implements Storage {
 
     protected abstract List<Resume> getList();
 
-    protected abstract void replaceInSearchKey(Object searchKey, Resume r);
+    protected abstract void replaceInSearchKey(Object searchKey, Resume resume);
 
     protected abstract boolean checkForExistence(Object searchKey);
 }
