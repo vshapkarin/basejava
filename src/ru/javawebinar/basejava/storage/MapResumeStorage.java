@@ -2,32 +2,56 @@ package ru.javawebinar.basejava.storage;
 
 import ru.javawebinar.basejava.model.Resume;
 
-public class MapResumeStorage extends AbstractMapStorage {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class MapResumeStorage extends AbstractStorage<Resume> {
+    private Map<String, Resume> storage = new HashMap<>();
 
     @Override
-    protected void removeBySearchKey(Object searchKey) {
-        Resume key = (Resume) searchKey;
-        getStorage().remove(key.getUuid());
+    public void clear() {
+        storage.clear();
     }
 
     @Override
-    protected Resume getResumeBySearchKey(Object searchKey) {
-        return (Resume) searchKey;
+    public int size() {
+        return storage.size();
+    }
+
+    @Override
+    protected void storeBySearchKey(Resume resume, Resume searchKey) {
+        storage.put(resume.getUuid(), resume);
+    }
+
+    @Override
+    protected List<Resume> getList() {
+        return new ArrayList<>(storage.values());
+    }
+
+    @Override
+    protected void removeBySearchKey(Resume searchKey) {
+        storage.remove(searchKey.getUuid());
+    }
+
+    @Override
+    protected Resume getResumeBySearchKey(Resume searchKey) {
+        return searchKey;
     }
 
     @Override
     protected Resume getSearchKey(String uuid) {
-        return getStorage().get(uuid);
+        return storage.get(uuid);
     }
 
     @Override
-    protected void replaceInSearchKey(Object searchKey, Resume resume) {
-        Resume key = (Resume) searchKey;
-        getStorage().replace(key.getUuid(), resume);
+    protected void replaceInSearchKey(Resume searchKey, Resume resume) {
+        storage.replace(searchKey.getUuid(), resume);
     }
 
     @Override
-    protected boolean checkForExistence(Object searchKey) {
+    protected boolean checkForExistence(Resume searchKey) {
         return searchKey != null;
     }
 }
