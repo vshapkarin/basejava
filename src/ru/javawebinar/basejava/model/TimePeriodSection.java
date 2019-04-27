@@ -19,5 +19,20 @@ public class TimePeriodSection extends Section {
         this.content = content;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        TimePeriodSection section = (TimePeriodSection) o;
+        return content.equals(section.content);
+    }
 
+    @Override
+    public int hashCode() {
+        return content.hashCode();
+    }
 }

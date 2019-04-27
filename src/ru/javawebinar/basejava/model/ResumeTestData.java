@@ -1,20 +1,21 @@
 package ru.javawebinar.basejava.model;
 
 import java.time.LocalDate;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ResumeTestData {
     public static void main(String[] args) {
         Resume resume = new Resume("1488", "Григорий Кислин");
-        Map<String, Contact> contacts = new LinkedHashMap<>();
-        contacts.put("Тел.", new Contact("Тел.", "+7(921) 855-0482"));
-        contacts.put("Skype", new Contact("Skype", "grigory.kislin"));
-        contacts.put("Почта", new Contact("Почта", "gkislin@yandex.ru"));
-        contacts.put("Профиль LinkedIn", new Contact("Профиль LinkedIn", ""));
-        contacts.put("Профиль GitHub", new Contact("Профиль GitHub", ""));
-        contacts.put("Профиль Stackoverflow", new Contact("Профиль Stackoverflow", ""));
-        contacts.put("Домашняя страница", new Contact("Домашняя страница", ""));
+        Map<ContactType, Contact> contacts = new EnumMap<>(ContactType.class);
+        contacts.put(ContactType.TELEPHONE, new Contact("+7(921) 855-0482"));
+        contacts.put(ContactType.SKYPE, new Contact("grigory.kislin"));
+        contacts.put(ContactType.EMAIL, new Contact("gkislin@yandex.ru"));
+        contacts.put(ContactType.LINKEDIN, new Contact(""));
+        contacts.put(ContactType.GITHUB, new Contact(""));
+        contacts.put(ContactType.STACKOVERFLOW, new Contact(""));
+        contacts.put(ContactType.HOMEPAGE, new Contact(""));
         resume.setContacts(contacts);
 
         Map<SectionType, Section> sections = new LinkedHashMap<>();
@@ -44,18 +45,18 @@ public class ResumeTestData {
         sections.put(SectionType.EXPERIENCE, new TimePeriodSection(new TimePeriod(LocalDate.of(2013, 10, 1),
                 LocalDate.now(),
                 "Java Online Projects",
-                "Автор проекта.\n" +
-                        "Создание, организация и проведение Java онлайн проектов и стажировок."),
+                "Автор проекта",
+                "Создание, организация и проведение Java онлайн проектов и стажировок."),
                 new TimePeriod(LocalDate.of(2014, 10, 1),
                         LocalDate.of(2016, 1, 1),
                         "Wrike",
-                        "Старший разработчик (backend)\n" +
-                                "Проектирование и разработка онлайн платформы управления проектами Wrike (Java 8 API, Maven, Spring, MyBatis, Guava, Vaadin, PostgreSQL, Redis). Двухфакторная аутентификация, авторизация по OAuth1, OAuth2, JWT SSO."),
+                        "Старший разработчик (backend)",
+                        "Проектирование и разработка онлайн платформы управления проектами Wrike (Java 8 API, Maven, Spring, MyBatis, Guava, Vaadin, PostgreSQL, Redis). Двухфакторная аутентификация, авторизация по OAuth1, OAuth2, JWT SSO."),
                 new TimePeriod(LocalDate.of(2012, 4, 1),
                         LocalDate.of(2014, 10, 1),
                         "RIT Center",
-                        "Java архитектор\n" +
-                                "Организация процесса разработки системы ERP для разных окружений: релизная политика, версионирование, ведение CI (Jenkins), миграция базы (кастомизация Flyway), конфигурирование системы (pgBoucer, Nginx), AAA via SSO. Архитектура БД и серверной части системы. Разработка интергационных сервисов: CMIS, BPMN2, 1C (WebServices), сервисов общего назначения (почта, экспорт в pdf, doc, html). Интеграция Alfresco JLAN для online редактирование из браузера документов MS Office. Maven + plugin development, Ant, Apache Commons, Spring security, Spring MVC, Tomcat,WSO2, xcmis, OpenCmis, Bonita, Python scripting, Unix shell remote scripting via ssh tunnels, PL/Python")
+                        "Java архитектор",
+                        "Организация процесса разработки системы ERP для разных окружений: релизная политика, версионирование, ведение CI (Jenkins), миграция базы (кастомизация Flyway), конфигурирование системы (pgBoucer, Nginx), AAA via SSO. Архитектура БД и серверной части системы. Разработка интергационных сервисов: CMIS, BPMN2, 1C (WebServices), сервисов общего назначения (почта, экспорт в pdf, doc, html). Интеграция Alfresco JLAN для online редактирование из браузера документов MS Office. Maven + plugin development, Ant, Apache Commons, Spring security, Spring MVC, Tomcat,WSO2, xcmis, OpenCmis, Bonita, Python scripting, Unix shell remote scripting via ssh tunnels, PL/Python")
         ));
         sections.put(SectionType.EDUCATION, new TimePeriodSection(new TimePeriod(LocalDate.of(2013, 3, 1),
                 LocalDate.of(2013, 5, 1),
@@ -75,8 +76,8 @@ public class ResumeTestData {
 
         System.out.printf("%s\n\n", resume.getFullName());
 
-        for (Map.Entry<String, Contact> entry : resume.getContacts().entrySet()) {
-            System.out.println(entry.getValue());
+        for (Map.Entry<ContactType, Contact> entry : resume.getContacts().entrySet()) {
+            System.out.println(entry.getKey().getTitle() + " " + entry.getValue());
         }
 
         System.out.println();

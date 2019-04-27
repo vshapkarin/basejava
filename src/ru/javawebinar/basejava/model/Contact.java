@@ -1,20 +1,10 @@
 package ru.javawebinar.basejava.model;
 
 public class Contact {
-    private String name;
     private String content;
 
-    public Contact(String name, String content) {
-        this.name = name;
+    public Contact(String content) {
         this.content = content;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getContent() {
@@ -26,7 +16,24 @@ public class Contact {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Contact contact = (Contact) o;
+        return content.equals(contact.content);
+    }
+
+    @Override
+    public int hashCode() {
+        return content.hashCode();
+    }
+
+    @Override
     public String toString() {
-        return name + " " + content;
+        return content;
     }
 }

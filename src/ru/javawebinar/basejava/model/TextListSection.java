@@ -19,4 +19,21 @@ public class TextListSection extends Section {
     public void setContent(List<String> content) {
         this.content = content;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        TextListSection section = (TextListSection) o;
+        return content.equals(section.content);
+    }
+
+    @Override
+    public int hashCode() {
+        return content.hashCode();
+    }
 }
