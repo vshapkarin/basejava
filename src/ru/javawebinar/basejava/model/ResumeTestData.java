@@ -2,7 +2,6 @@ package ru.javawebinar.basejava.model;
 
 import java.time.LocalDate;
 import java.util.EnumMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ResumeTestData {
@@ -18,7 +17,7 @@ public class ResumeTestData {
         contacts.put(ContactType.HOMEPAGE, new Contact(""));
         resume.setContacts(contacts);
 
-        Map<SectionType, Section> sections = new LinkedHashMap<>();
+        Map<SectionType, AbstractSection> sections = new EnumMap<>(SectionType.class);
         sections.put(SectionType.PERSONAL, new TextOnlySection("Аналитический склад ума, сильная логика, креативность, инициативность. Пурист кода и архитектуры."));
         sections.put(SectionType.OBJECTIVE, new TextOnlySection("Ведущий стажировок и корпоративного обучения по Java Web и Enterprise технологиям"));
         sections.put(SectionType.ACHIEVEMENT, new TextListSection("С 2013 года: разработка проектов \"Разработка Web приложения\",\"Java Enterprise\", \"Многомодульный maven. Многопоточность. XML (JAXB/StAX). Веб сервисы (JAX-RS/SOAP). Удаленное взаимодействие (JMS/AKKA)\". Организация онлайн стажировок и ведение проектов. Более 1000 выпускников.",
@@ -42,33 +41,39 @@ public class ResumeTestData {
                 "администрирование Hudson/Jenkins, Ant + custom task, SoapUI, JPublisher, Flyway, Nagios, iReport, OpenCmis, Bonita, pgBouncer.",
                 "Отличное знание и опыт применения концепций ООП, SOA, шаблонов проектрирования, архитектурных шаблонов, UML, функционального программирования",
                 "Родной русский, английский \"upper intermediate\""));
-        sections.put(SectionType.EXPERIENCE, new TimePeriodSection(new TimePeriod(LocalDate.of(2013, 10, 1),
+        sections.put(SectionType.EXPERIENCE, new TimePeriodSection(new TimePeriod("Java Online Projects",
+                null,
+                LocalDate.of(2013, 10, 1),
                 LocalDate.now(),
-                "Java Online Projects",
                 "Автор проекта",
                 "Создание, организация и проведение Java онлайн проектов и стажировок."),
-                new TimePeriod(LocalDate.of(2014, 10, 1),
+                new TimePeriod("Wrike",
+                        null,
+                        LocalDate.of(2014, 10, 1),
                         LocalDate.of(2016, 1, 1),
-                        "Wrike",
                         "Старший разработчик (backend)",
                         "Проектирование и разработка онлайн платформы управления проектами Wrike (Java 8 API, Maven, Spring, MyBatis, Guava, Vaadin, PostgreSQL, Redis). Двухфакторная аутентификация, авторизация по OAuth1, OAuth2, JWT SSO."),
-                new TimePeriod(LocalDate.of(2012, 4, 1),
+                new TimePeriod("RIT Center",
+                        null,
+                        LocalDate.of(2012, 4, 1),
                         LocalDate.of(2014, 10, 1),
-                        "RIT Center",
                         "Java архитектор",
                         "Организация процесса разработки системы ERP для разных окружений: релизная политика, версионирование, ведение CI (Jenkins), миграция базы (кастомизация Flyway), конфигурирование системы (pgBoucer, Nginx), AAA via SSO. Архитектура БД и серверной части системы. Разработка интергационных сервисов: CMIS, BPMN2, 1C (WebServices), сервисов общего назначения (почта, экспорт в pdf, doc, html). Интеграция Alfresco JLAN для online редактирование из браузера документов MS Office. Maven + plugin development, Ant, Apache Commons, Spring security, Spring MVC, Tomcat,WSO2, xcmis, OpenCmis, Bonita, Python scripting, Unix shell remote scripting via ssh tunnels, PL/Python")
         ));
-        sections.put(SectionType.EDUCATION, new TimePeriodSection(new TimePeriod(LocalDate.of(2013, 3, 1),
+        sections.put(SectionType.EDUCATION, new TimePeriodSection(new TimePeriod("Coursera",
+                "coursera.com",
+                LocalDate.of(2013, 3, 1),
                 LocalDate.of(2013, 5, 1),
-                "Coursera",
                 "\"Functional Programming Principles in Scala\" by Martin Odersky"),
-                new TimePeriod(LocalDate.of(2011, 3, 1),
+                new TimePeriod("Luxoft",
+                        null,
+                        LocalDate.of(2011, 3, 1),
                         LocalDate.of(2011, 4, 1),
-                        "Luxoft",
                         "Курс \"Объектно-ориентированный анализ ИС. Концептуальное моделирование на UML.\""),
-                new TimePeriod(LocalDate.of(2005, 1, 1),
+                new TimePeriod("Siemens AG",
+                        null,
+                        LocalDate.of(2005, 1, 1),
                         LocalDate.of(2005, 4, 1),
-                        "Siemens AG",
                         "3 месяца обучения мобильным IN сетям (Берлин)")
 
         ));
@@ -82,7 +87,7 @@ public class ResumeTestData {
 
         System.out.println();
 
-        for (Map.Entry<SectionType, Section> entry : resume.getSections().entrySet()) {
+        for (Map.Entry<SectionType, AbstractSection> entry : resume.getSections().entrySet()) {
             switch (entry.getKey()) {
                 case PERSONAL:
                     System.out.printf("%s:\n%s\n\n", SectionType.PERSONAL.getTitle(), entry.getValue());
@@ -110,12 +115,13 @@ public class ResumeTestData {
                     System.out.println(SectionType.EXPERIENCE.getTitle() + ":");
                     TimePeriodSection periodSection = (TimePeriodSection) entry.getValue();
                     for (TimePeriod period : periodSection.getContent()) {
-                        System.out.printf("%s - %d/%d - %d/%d\n%s\n", period.getName(),
+                        System.out.printf("%s - %d/%d - %d/%d\n%s\n%s\n", period.getHomePage(),
                                 period.getStart().getYear(),
                                 period.getStart().getMonthValue(),
                                 period.getEnd().getYear(),
                                 period.getEnd().getMonthValue(),
-                                period.getText());
+                                period.getText(),
+                                period.getOptionalText());
                     }
                     System.out.println();
                     break;
@@ -123,7 +129,7 @@ public class ResumeTestData {
                     System.out.println(SectionType.EDUCATION.getTitle() + ":");
                     TimePeriodSection periodSection2 = (TimePeriodSection) entry.getValue();
                     for (TimePeriod period : periodSection2.getContent()) {
-                        System.out.printf("%s - %d/%d - %d/%d\n%s\n", period.getName(),
+                        System.out.printf("%s - %d/%d - %d/%d\n%s\n", period.getHomePage(),
                                 period.getStart().getYear(),
                                 period.getStart().getMonthValue(),
                                 period.getEnd().getYear(),

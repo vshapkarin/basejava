@@ -1,29 +1,22 @@
 package ru.javawebinar.basejava.model;
 
-public class TextOnlySection extends Section {
+import java.util.Objects;
+
+public class TextOnlySection extends AbstractSection {
     private String content;
 
     public TextOnlySection(String content) {
-        this.content = content;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
+        Objects.requireNonNull(content, "content must be not null");
         this.content = content;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
         TextOnlySection section = (TextOnlySection) o;
+
         return content.equals(section.content);
     }
 

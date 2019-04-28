@@ -3,21 +3,18 @@ package ru.javawebinar.basejava.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
-public class TextListSection extends Section {
+public class TextListSection extends AbstractSection {
     private List<String> content;
 
     public TextListSection(String... content) {
+        Objects.requireNonNull(content, "content must be not null");
         this.content = Arrays.asList(content);
-
     }
 
     public List<String> getContent() {
         return new ArrayList<>(content);
-    }
-
-    public void setContent(List<String> content) {
-        this.content = content;
     }
 
     @Override
