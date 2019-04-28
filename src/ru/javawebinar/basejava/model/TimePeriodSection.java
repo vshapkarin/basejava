@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Objects;
 
 public class TimePeriodSection extends AbstractSection {
-    private List<TimePeriod> content;
+    private List<TimePeriodOrganisation> content;
 
-    public TimePeriodSection (TimePeriod... content) {
+    public TimePeriodSection (TimePeriodOrganisation... content) {
         Objects.requireNonNull(content, "content must be not null");
         this.content = Arrays.asList(content);
     }
 
-    public List<TimePeriod> getContent() {
+    public List<TimePeriodOrganisation> getContent() {
         return new ArrayList<>(content);
     }
 

@@ -16,33 +16,33 @@ public abstract class AbstractStorage<T> implements Storage {
     public void update(Resume resume) {
         LOG.info("Update " + resume);
         T searchKey = getExistSearchKey(resume.getUuid());
-        replaceInSearchKey(searchKey, resume);
+        doUpdate(searchKey, resume);
     }
 
     @Override
     public void save(Resume resume) {
         LOG.info("Save " + resume);
         T searchKey = getNotExistSearchKey(resume.getUuid());
-        storeBySearchKey(resume, searchKey);
+        doSave(resume, searchKey);
     }
 
     @Override
     public Resume get(String uuid) {
         LOG.info("Get " + uuid);
         T searchKey = getExistSearchKey(uuid);
-        return getResumeBySearchKey(searchKey);
+        return doGet(searchKey);
     }
 
     @Override
     public void delete(String uuid) {
         LOG.info("Delete " + uuid);
         T searchKey = getExistSearchKey(uuid);
-        removeBySearchKey(searchKey);
+        doDelete(searchKey);
     }
 
     public List<Resume> getAllSorted() {
         LOG.info("getAllSorted");
-        List<Resume> list = getList();
+        List<Resume> list = doCopyAll();
         Collections.sort(list);
         return list;
     }
@@ -65,17 +65,17 @@ public abstract class AbstractStorage<T> implements Storage {
         return searchKey;
     }
 
-    protected abstract void removeBySearchKey(T searchKey);
+    protected abstract void doDelete(T searchKey);
 
-    protected abstract void storeBySearchKey(Resume resume, T searchKey);
+    protected abstract void doSave(Resume resume, T searchKey);
 
-    protected abstract Resume getResumeBySearchKey(T searchKey);
+    protected abstract Resume doGet(T searchKey);
 
     protected abstract T getSearchKey(String uuid);
 
-    protected abstract List<Resume> getList();
+    protected abstract List<Resume> doCopyAll();
 
-    protected abstract void replaceInSearchKey(T searchKey, Resume resume);
+    protected abstract void doUpdate(T searchKey, Resume resume);
 
     protected abstract boolean checkForExistence(T searchKey);
 }

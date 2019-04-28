@@ -19,17 +19,17 @@ public class ListStorage extends AbstractStorage<Integer> {
     }
 
     @Override
-    protected void removeBySearchKey(Integer index) {
+    protected void doDelete(Integer index) {
         storage.remove(index.intValue());
     }
 
     @Override
-    protected void storeBySearchKey(Resume resume, Integer index) {
+    protected void doSave(Resume resume, Integer index) {
         storage.add(resume);
     }
 
     @Override
-    protected Resume getResumeBySearchKey(Integer searchKey) {
+    protected Resume doGet(Integer searchKey) {
         return storage.get(searchKey);
     }
 
@@ -44,12 +44,12 @@ public class ListStorage extends AbstractStorage<Integer> {
     }
 
     @Override
-    protected List<Resume> getList() {
+    protected List<Resume> doCopyAll() {
         return new ArrayList<>(storage);
     }
 
     @Override
-    protected void replaceInSearchKey(Integer index, Resume resume) {
+    protected void doUpdate(Integer index, Resume resume) {
         storage.set(index, resume);
     }
 
