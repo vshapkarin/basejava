@@ -56,6 +56,9 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
     protected List<Resume> doCopyAll() {
         List<Resume> list = new ArrayList<>();
         File[] filesInDirectory = directory.listFiles();
+        if (filesInDirectory == null) {
+            return list;
+        }
         for (File currentFile : filesInDirectory) {
             if (!currentFile.isDirectory()) {
                 try {
@@ -85,14 +88,21 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
     @Override
     public void clear() {
         File[] filesInDirectory = directory.listFiles();
-        for (File currentFile : filesInDirectory) {
-            currentFile.delete();
+        if (filesInDirectory != null) {
+            for (File currentFile : filesInDirectory) {
+                currentFile.delete();
+            }
         }
     }
 
     @Override
     public int size() {
-        return directory.list().length;
+        String[] dirContent = directory.list();
+        if (dirContent != null) {
+            return dirContent.length;
+        } else {
+            return 0;
+        }
     }
 
     protected abstract void doWrite(Resume resume, File file) throws IOException;
