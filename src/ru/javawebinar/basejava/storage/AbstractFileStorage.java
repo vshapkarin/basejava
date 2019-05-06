@@ -25,17 +25,19 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
 
     @Override
     protected void doDelete(File file) {
-        file.delete();
+        if (!file.delete()) {
+            throw new StorageException("Can't delete file", file.getName());
+        }
     }
 
     @Override
     protected void doSave(Resume resume, File file) {
         try {
             file.createNewFile();
-            doWrite(resume, file);
         } catch (IOException e) {
-            throw new StorageException("IO error", file.getName(), e);
+            throw new StorageException("Can't create new file in " + file.getAbsolutePath(), file.getName(), e);
         }
+        doUpdate(file, resume);
     }
 
     @Override
@@ -54,11 +56,11 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
 
     @Override
     protected List<Resume> doCopyAll() {
-        List<Resume> list = new ArrayList<>();
         File[] filesInDirectory = directory.listFiles();
         if (filesInDirectory == null) {
-            return list;
+            throw new StorageException("Directory read error in " + directory.getAbsolutePath(), null);
         }
+        List<Resume> list = new ArrayList<>();
         for (File currentFile : filesInDirectory) {
             if (!currentFile.isDirectory()) {
                 try {
@@ -76,7 +78,7 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
         try {
             doWrite(resume, file);
         } catch (IOException e) {
-            throw new StorageException("IO error", file.getName(), e);
+            throw new StorageException("File update error in " + file.getAbsolutePath(), file.getName(), e);
         }
     }
 
