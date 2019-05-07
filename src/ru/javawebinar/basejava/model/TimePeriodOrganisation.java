@@ -2,13 +2,16 @@ package ru.javawebinar.basejava.model;
 
 import ru.javawebinar.basejava.util.DateUtil;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class TimePeriodOrganisation {
+public class TimePeriodOrganisation implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Link homePage;
     private List<TimePeriod> periods;
 
@@ -47,7 +50,9 @@ public class TimePeriodOrganisation {
         return "Organisation - " + homePage + '(' + periods + ')';
     }
 
-    public static class TimePeriod {
+    public static class TimePeriod implements Serializable{
+        private static final long serialVersionUID = 1L;
+
         private LocalDate start;
         private LocalDate end;
         private String text;

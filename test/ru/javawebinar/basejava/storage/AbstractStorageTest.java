@@ -8,6 +8,7 @@ import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.Resume;
 import ru.javawebinar.basejava.model.ResumeTestData;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 
 public abstract class AbstractStorageTest {
+    protected static final File STORAGE_DIR = new File("C:\\test\\projects\\storage");
+
     protected Storage storage;
 
     private static final String UUID_1 = "uuid1";
@@ -53,7 +56,7 @@ public abstract class AbstractStorageTest {
     @Test
     public void update() {
         storage.update(R5);
-        Assert.assertSame(R5, storage.get(UUID_1));
+        Assert.assertEquals(R5, storage.get(UUID_1));
     }
 
     @Test(expected = NotExistStorageException.class)

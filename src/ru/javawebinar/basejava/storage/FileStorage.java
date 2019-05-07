@@ -3,16 +3,15 @@ package ru.javawebinar.basejava.storage;
 import ru.javawebinar.basejava.exception.StorageException;
 import ru.javawebinar.basejava.model.Resume;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class AbstractFileStorage extends AbstractStorage<File> {
+public class FileStorage extends AbstractStorage<File> implements SerializationStrategy<File> {
     private File directory;
 
-    protected AbstractFileStorage(File directory) {
+    protected FileStorage(File directory) {
         Objects.requireNonNull(directory, "directory must not be null");
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException(directory.getAbsolutePath() + "is not directory");
@@ -24,14 +23,14 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
     }
 
     @Override
-    protected void doDelete(File file) {
+    public void doDelete(File file) {
         if (!file.delete()) {
             throw new StorageException("Can't delete file", file.getName());
         }
     }
 
     @Override
-    protected void doSave(Resume resume, File file) {
+    public void doSave(Resume resume, File file) {
         try {
             file.createNewFile();
         } catch (IOException e) {
@@ -41,21 +40,21 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
     }
 
     @Override
-    protected Resume doGet(File file) {
+    public Resume doGet(File file) {
         try {
-            return doRead(file);
+            return doRead(new BufferedInputStream(new FileInputStream(file)));
         } catch (IOException e) {
             throw new StorageException("IO error", file.getName(), e);
         }
     }
 
     @Override
-    protected File getSearchKey(String uuid) {
+    public File getSearchKey(String uuid) {
         return new File(directory, uuid);
     }
 
     @Override
-    protected List<Resume> doCopyAll() {
+    public List<Resume> doCopyAll() {
         File[] filesInDirectory = directory.listFiles();
         if (filesInDirectory == null) {
             throw new StorageException("Directory read error in " + directory.getAbsolutePath(), null);
@@ -63,27 +62,23 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
         List<Resume> list = new ArrayList<>();
         for (File currentFile : filesInDirectory) {
             if (!currentFile.isDirectory()) {
-                try {
-                    list.add(doRead(currentFile));
-                } catch (IOException e) {
-                    throw new StorageException("IO error", currentFile.getName(), e);
-                }
+                list.add(doGet(currentFile));
             }
         }
         return list;
     }
 
     @Override
-    protected void doUpdate(File file, Resume resume) {
+    public void doUpdate(File file, Resume resume) {
         try {
-            doWrite(resume, file);
+            doWrite(resume, new BufferedOutputStream(new FileOutputStream(file)));
         } catch (IOException e) {
             throw new StorageException("File update error in " + file.getAbsolutePath(), file.getName(), e);
         }
     }
 
     @Override
-    protected boolean checkForExistence(File file) {
+    public boolean checkForExistence(File file) {
         return file.exists();
     }
 
@@ -107,7 +102,17 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
         }
     }
 
-    protected abstract void doWrite(Resume resume, File file) throws IOException;
+    public void doWrite(Resume resume, OutputStream os) throws IOException {
+        try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
+            oos.writeObject(resume);
+        }
+    }
 
-    protected abstract Resume doRead(File file) throws IOException;
+    public Resume doRead(InputStream is) throws IOException {
+        try (ObjectInputStream ois = new ObjectInputStream(is)) {
+            return (Resume) ois.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new StorageException("Error read resume", null, e);
+        }
+    }
 }

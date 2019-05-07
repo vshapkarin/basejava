@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class TimePeriodSection extends AbstractSection {
+    private static final long serialVersionUID = 1L;
+
     private List<TimePeriodOrganisation> content;
 
     public TimePeriodSection(TimePeriodOrganisation... content) {
