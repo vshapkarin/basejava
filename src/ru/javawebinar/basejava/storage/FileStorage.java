@@ -8,10 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class FileStorage extends AbstractStorage<File> implements SerializationStrategy<File> {
+public class FileStorage implements SerializationStrategy {
     private File directory;
+    private AbstractFilePathStorage storageRealisation;
 
-    protected FileStorage(File directory) {
+    protected FileStorage(String dir) {
+        File directory = new File(dir);
         Objects.requireNonNull(directory, "directory must not be null");
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException(directory.getAbsolutePath() + "is not directory");
@@ -23,28 +25,33 @@ public class FileStorage extends AbstractStorage<File> implements SerializationS
     }
 
     @Override
-    public void doDelete(File file) {
-        if (!file.delete()) {
-            throw new StorageException("Can't delete file", file.getName());
+    public void setStorageRealisation(AbstractFilePathStorage storageRealisation) {
+        this.storageRealisation = storageRealisation;
+    }
+
+    @Override
+    public void doDelete(Object file) {
+        if (!((File) file).delete()) {
+            throw new StorageException("Can't delete file", ((File) file).getName());
         }
     }
 
     @Override
-    public void doSave(Resume resume, File file) {
+    public void doSave(Resume resume, Object file) {
         try {
-            file.createNewFile();
+            ((File) file).createNewFile();
         } catch (IOException e) {
-            throw new StorageException("Can't create new file in " + file.getAbsolutePath(), file.getName(), e);
+            throw new StorageException("Can't create new file in " + ((File) file).getAbsolutePath(), ((File) file).getName(), e);
         }
         doUpdate(file, resume);
     }
 
     @Override
-    public Resume doGet(File file) {
+    public Resume doGet(Object file) {
         try {
-            return doRead(new BufferedInputStream(new FileInputStream(file)));
+            return storageRealisation.doRead(new BufferedInputStream(new FileInputStream((File) file)));
         } catch (IOException e) {
-            throw new StorageException("IO error", file.getName(), e);
+            throw new StorageException("IO error", ((File) file).getName(), e);
         }
     }
 
@@ -69,17 +76,17 @@ public class FileStorage extends AbstractStorage<File> implements SerializationS
     }
 
     @Override
-    public void doUpdate(File file, Resume resume) {
+    public void doUpdate(Object file, Resume resume) {
         try {
-            doWrite(resume, new BufferedOutputStream(new FileOutputStream(file)));
+            storageRealisation.doWrite(resume, new BufferedOutputStream(new FileOutputStream((File) file)));
         } catch (IOException e) {
-            throw new StorageException("File update error in " + file.getAbsolutePath(), file.getName(), e);
+            throw new StorageException("File update error in " + ((File) file).getAbsolutePath(), ((File) file).getName(), e);
         }
     }
 
     @Override
-    public boolean checkForExistence(File file) {
-        return file.exists();
+    public boolean checkForExistence(Object file) {
+        return ((File) file).exists();
     }
 
     @Override
@@ -102,17 +109,17 @@ public class FileStorage extends AbstractStorage<File> implements SerializationS
         }
     }
 
-    public void doWrite(Resume resume, OutputStream os) throws IOException {
-        try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
-            oos.writeObject(resume);
-        }
-    }
-
-    public Resume doRead(InputStream is) throws IOException {
-        try (ObjectInputStream ois = new ObjectInputStream(is)) {
-            return (Resume) ois.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new StorageException("Error read resume", null, e);
-        }
-    }
+//    public void doWrite(Resume resume, OutputStream os) throws IOException {
+//        try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
+//            oos.writeObject(resume);
+//        }
+//    }
+//
+//    public Resume doRead(InputStream is) throws IOException {
+//        try (ObjectInputStream ois = new ObjectInputStream(is)) {
+//            return (Resume) ois.readObject();
+//        } catch (ClassNotFoundException e) {
+//            throw new StorageException("Error read resume", null, e);
+//        }
+//    }
 }
