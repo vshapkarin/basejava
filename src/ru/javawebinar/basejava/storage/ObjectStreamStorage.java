@@ -5,10 +5,11 @@ import ru.javawebinar.basejava.model.Resume;
 
 import java.io.*;
 
-public class ObjectStreamStorage extends AbstractFilePathStorage {
+public class ObjectStreamStorage implements SerializationStrategy {
 
-    public ObjectStreamStorage(SerializationStrategy strategy) {
-        super.setStrategy(strategy, this);
+    public AbstractSerializationStorage setStrategy(AbstractSerializationStorage strategy) {
+        strategy.setStorageRealisation(this);
+        return strategy;
     }
 
     @Override

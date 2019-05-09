@@ -1,16 +1,20 @@
 package ru.javawebinar.basejava.model;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 public class Contact implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private String content;
+    private String name;
+    private String url;
 
-    public Contact(String content) {
-        Objects.requireNonNull(content, "content must be not null");
-        this.content = content;
+    public Contact(String name) {
+        this(name, null);
+    }
+
+    public Contact(String name, String url) {
+        this.name = name;
+        this.url = url;
     }
 
     @Override
@@ -20,16 +24,20 @@ public class Contact implements Serializable {
 
         Contact contact = (Contact) o;
 
-        return content.equals(contact.content);
+        if (!name.equals(contact.name)) return false;
+        return url != null ? url.equals(contact.url) : contact.url == null;
+
     }
 
     @Override
     public int hashCode() {
-        return content.hashCode();
+        int result = name.hashCode();
+        result = 31 * result + (url != null ? url.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {
-        return content;
+        return url == null ? name : "Contact(" + name + ',' + url + ')';
     }
 }

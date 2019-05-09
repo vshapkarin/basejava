@@ -2,27 +2,14 @@ package ru.javawebinar.basejava.storage;
 
 import ru.javawebinar.basejava.model.Resume;
 
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public interface SerializationStrategy {
 
-    void setStorageRealisation(AbstractFilePathStorage storageRealisation);
+    void doWrite(Resume resume, OutputStream os) throws IOException;
 
-    void doDelete(Object filePath);
+    Resume doRead(InputStream is) throws IOException;
 
-    void doSave(Resume resume, Object filePath);
-
-    Resume doGet(Object filePath);
-
-    Object getSearchKey(String uuid);
-
-    List<Resume> doCopyAll();
-
-    void doUpdate(Object filePath, Resume resume);
-
-    boolean checkForExistence(Object filePath);
-
-    void clear();
-
-    int size();
 }

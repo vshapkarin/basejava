@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class PathStorage implements SerializationStrategy {
+public class PathStorage extends AbstractSerializationStorage {
     private Path directory;
-    private AbstractFilePathStorage storageRealisation;
+    private SerializationStrategy storageRealisation;
 
     protected PathStorage(String dir) {
         directory = Paths.get(dir);
@@ -24,7 +24,7 @@ public class PathStorage implements SerializationStrategy {
     }
 
     @Override
-    public void setStorageRealisation(AbstractFilePathStorage storageRealisation) {
+    public void setStorageRealisation(SerializationStrategy storageRealisation) {
         this.storageRealisation = storageRealisation;
     }
 

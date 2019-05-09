@@ -12,14 +12,14 @@ import java.util.Objects;
 public class TimePeriodOrganisation implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private Link homePage;
+    private Contact homePage;
     private List<TimePeriod> periods;
 
     public TimePeriodOrganisation(String name, String url, TimePeriod... periods) {
-        this(new Link(name, url), Arrays.asList(periods));
+        this(new Contact(name, url), Arrays.asList(periods));
     }
 
-    public TimePeriodOrganisation(Link homePage, List<TimePeriod> periods) {
+    public TimePeriodOrganisation(Contact homePage, List<TimePeriod> periods) {
         Objects.requireNonNull(homePage, "organisation name must not be null");
         Objects.requireNonNull(periods, "time periods must not be null");
         this.homePage = homePage;
