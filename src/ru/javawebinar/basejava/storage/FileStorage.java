@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class FileStorage extends AbstractSerializationStorage {
+public class FileStorage extends AbstractStorage<Object> {
     private File directory;
     private SerializationStrategy storageRealisation;
 
-    protected FileStorage(String dir) {
+    protected FileStorage(SerializationStrategy storageRealisation, String dir) {
+        this.storageRealisation = storageRealisation;
         File directory = new File(dir);
         Objects.requireNonNull(directory, "directory must not be null");
         if (!directory.isDirectory()) {
@@ -22,11 +23,6 @@ public class FileStorage extends AbstractSerializationStorage {
             throw new IllegalArgumentException(directory.getAbsolutePath() + "is not readable/writable");
         }
         this.directory = directory;
-    }
-
-    @Override
-    public void setStorageRealisation(SerializationStrategy storageRealisation) {
-        this.storageRealisation = storageRealisation;
     }
 
     @Override

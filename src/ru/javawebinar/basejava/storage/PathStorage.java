@@ -11,21 +11,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class PathStorage extends AbstractSerializationStorage {
+public class PathStorage extends AbstractStorage<Object> {
     private Path directory;
     private SerializationStrategy storageRealisation;
 
-    protected PathStorage(String dir) {
+    protected PathStorage(SerializationStrategy storageRealisation, String dir) {
+        this.storageRealisation = storageRealisation;
         directory = Paths.get(dir);
         Objects.requireNonNull(directory, "directory must not be null");
         if (!Files.isDirectory(directory) || !Files.isWritable(directory)) {
             throw new IllegalArgumentException(dir + " is not directory or is not writable");
         }
-    }
-
-    @Override
-    public void setStorageRealisation(SerializationStrategy storageRealisation) {
-        this.storageRealisation = storageRealisation;
     }
 
     @Override

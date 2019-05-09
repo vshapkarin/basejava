@@ -7,11 +7,6 @@ import java.io.*;
 
 public class ObjectStreamStorage implements SerializationStrategy {
 
-    public AbstractSerializationStorage setStrategy(AbstractSerializationStorage strategy) {
-        strategy.setStorageRealisation(this);
-        return strategy;
-    }
-
     @Override
     public void doWrite(Resume resume, OutputStream os) throws IOException {
         try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
