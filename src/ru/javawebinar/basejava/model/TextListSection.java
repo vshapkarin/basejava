@@ -9,6 +9,9 @@ public class TextListSection extends AbstractSection {
 
     private List<String> content;
 
+    public TextListSection() {
+    }
+
     public TextListSection(String... content) {
         this(Arrays.asList(content));
     }
@@ -16,6 +19,10 @@ public class TextListSection extends AbstractSection {
     public TextListSection(List<String> content) {
         Objects.requireNonNull(content, "content must be not null");
         this.content = content;
+    }
+
+    public List<String> getContent() {
+        return content;
     }
 
     @Override

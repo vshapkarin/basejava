@@ -2,20 +2,22 @@ package ru.javawebinar.basejava.storage;
 
 import ru.javawebinar.basejava.exception.StorageException;
 import ru.javawebinar.basejava.model.Resume;
+import ru.javawebinar.basejava.storage.serializer.SerializationStrategy;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class FileStorage extends AbstractStorage<Object> {
+public class FileStorage extends AbstractStorage<File> {
     private File directory;
     private SerializationStrategy storageRealisation;
 
     protected FileStorage(SerializationStrategy storageRealisation, String dir) {
+        Objects.requireNonNull(dir, "directory must not be null");
+
         this.storageRealisation = storageRealisation;
         File directory = new File(dir);
-        Objects.requireNonNull(directory, "directory must not be null");
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException(directory.getAbsolutePath() + "is not directory");
         }
@@ -26,28 +28,28 @@ public class FileStorage extends AbstractStorage<Object> {
     }
 
     @Override
-    public void doDelete(Object file) {
-        if (!((File) file).delete()) {
-            throw new StorageException("Can't delete file", ((File) file).getName());
+    public void doDelete(File file) {
+        if (!file.delete()) {
+            throw new StorageException("Can't delete file", file.getName());
         }
     }
 
     @Override
-    public void doSave(Resume resume, Object file) {
+    public void doSave(Resume resume, File file) {
         try {
-            ((File) file).createNewFile();
+            file.createNewFile();
         } catch (IOException e) {
-            throw new StorageException("Can't create new file in " + ((File) file).getAbsolutePath(), ((File) file).getName(), e);
+            throw new StorageException("Can't create new file in " + file.getAbsolutePath(), file.getName(), e);
         }
         doUpdate(file, resume);
     }
 
     @Override
-    public Resume doGet(Object file) {
+    public Resume doGet(File file) {
         try {
-            return storageRealisation.doRead(new BufferedInputStream(new FileInputStream((File) file)));
+            return storageRealisation.doRead(new BufferedInputStream(new FileInputStream(file)));
         } catch (IOException e) {
-            throw new StorageException("IO error", ((File) file).getName(), e);
+            throw new StorageException("IO error", file.getName(), e);
         }
     }
 
@@ -60,7 +62,7 @@ public class FileStorage extends AbstractStorage<Object> {
     public List<Resume> doCopyAll() {
         File[] filesInDirectory = directory.listFiles();
         if (filesInDirectory == null) {
-            throw new StorageException("Directory read error in " + directory.getAbsolutePath(), null);
+            throw new StorageException("Directory read error" + directory.getAbsolutePath());
         }
         List<Resume> list = new ArrayList<>();
         for (File currentFile : filesInDirectory) {
@@ -72,17 +74,17 @@ public class FileStorage extends AbstractStorage<Object> {
     }
 
     @Override
-    public void doUpdate(Object file, Resume resume) {
+    public void doUpdate(File file, Resume resume) {
         try {
-            storageRealisation.doWrite(resume, new BufferedOutputStream(new FileOutputStream((File) file)));
+            storageRealisation.doWrite(resume, new BufferedOutputStream(new FileOutputStream(file)));
         } catch (IOException e) {
-            throw new StorageException("File update error in " + ((File) file).getAbsolutePath(), ((File) file).getName(), e);
+            throw new StorageException("File update error in " + file.getAbsolutePath(), file.getName(), e);
         }
     }
 
     @Override
-    public boolean checkForExistence(Object file) {
-        return ((File) file).exists();
+    public boolean checkForExistence(File file) {
+        return file.exists();
     }
 
     @Override
@@ -101,7 +103,7 @@ public class FileStorage extends AbstractStorage<Object> {
         if (dirContent != null) {
             return dirContent.length;
         } else {
-            return 0;
+            throw new StorageException("Directory read error");
         }
     }
 }

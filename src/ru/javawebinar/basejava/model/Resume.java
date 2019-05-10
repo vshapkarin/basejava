@@ -1,21 +1,26 @@
 package ru.javawebinar.basejava.model;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Initial resume class
- */
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Resume implements Comparable<Resume>, Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final String uuid;
+    private String uuid;
     private String fullName;
     private Map<ContactType, Contact> contacts;
     private Map<SectionType, AbstractSection> sections;
+
+    public Resume() {
+    }
 
     public Resume(String fullName) {
         this(UUID.randomUUID().toString(), fullName);
@@ -39,21 +44,28 @@ public class Resume implements Comparable<Resume>, Serializable {
     }
 
     public Map<ContactType, Contact> getContacts() {
-        return new EnumMap<>(contacts);
+        return contacts;
     }
 
-    public void setContacts(Map<ContactType, Contact> contacts) {
-        Objects.requireNonNull(contacts, "contacts must be not null");
-        this.contacts = contacts;
-    }
 
     public Map<SectionType, AbstractSection> getSections() {
-        return new EnumMap<>(sections);
+        return sections;
     }
 
-    public void setSections(Map<SectionType, AbstractSection> sections) {
-        Objects.requireNonNull(sections, "sections must be not null");
-        this.sections = sections;
+    public String getContact(ContactType type) {
+        return contacts.get(type).toString();
+    }
+
+    public AbstractSection getSection(SectionType type) {
+        return sections.get(type);
+    }
+
+    public void addContact(ContactType type, String value) {
+        contacts.put(type, new Contact(value));
+    }
+
+    public void addSection(SectionType type, AbstractSection section) {
+        sections.put(type, section);
     }
 
     @Override

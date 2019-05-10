@@ -1,7 +1,11 @@
 package ru.javawebinar.basejava.model;
 
 import ru.javawebinar.basejava.util.DateUtil;
+import ru.javawebinar.basejava.util.LocalDateAdapter;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Month;
@@ -9,11 +13,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+@XmlAccessorType(XmlAccessType.FIELD)
 public class TimePeriodOrganisation implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Contact homePage;
     private List<TimePeriod> periods;
+
+    public TimePeriodOrganisation() {
+    }
 
     public TimePeriodOrganisation(String name, String url, TimePeriod... periods) {
         this(new Contact(name, url), Arrays.asList(periods));
@@ -24,6 +32,14 @@ public class TimePeriodOrganisation implements Serializable {
         Objects.requireNonNull(periods, "time periods must not be null");
         this.homePage = homePage;
         this.periods = periods;
+    }
+
+    public Contact getHomePage() {
+        return homePage;
+    }
+
+    public List<TimePeriod> getPeriods() {
+        return periods;
     }
 
     @Override
@@ -50,13 +66,19 @@ public class TimePeriodOrganisation implements Serializable {
         return "Organisation - " + homePage + '(' + periods + ')';
     }
 
+    @XmlAccessorType(XmlAccessType.FIELD)
     public static class TimePeriod implements Serializable{
         private static final long serialVersionUID = 1L;
 
+        @XmlJavaTypeAdapter(LocalDateAdapter.class)
         private LocalDate start;
+        @XmlJavaTypeAdapter(LocalDateAdapter.class)
         private LocalDate end;
         private String text;
         private String optionalText;
+
+        public TimePeriod() {
+        }
 
         public TimePeriod(int startYear, Month startMonth, String text, String optionalText) {
             this(DateUtil.of(startYear, startMonth), DateUtil.NOW, text, optionalText);
@@ -74,6 +96,22 @@ public class TimePeriodOrganisation implements Serializable {
             this.end = end;
             this.text = text;
             this.optionalText = optionalText;
+        }
+
+        public LocalDate getStart() {
+            return start;
+        }
+
+        public LocalDate getEnd() {
+            return end;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getOptionalText() {
+            return optionalText;
         }
 
         @Override
