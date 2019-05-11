@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static ru.javawebinar.basejava.model.SectionType.*;
-
 public class DataStreamSerializer implements SerializationStrategy {
 
     @Override
@@ -27,24 +25,20 @@ public class DataStreamSerializer implements SerializationStrategy {
             Map<SectionType, AbstractSection> sections = resume.getSections();
             dos.writeInt(sections.size());
             for (Map.Entry<SectionType, AbstractSection> entry : sections.entrySet()) {
-                switch (entry.getKey()) {
+                SectionType title = entry.getKey();
+                dos.writeUTF(title.name());
+                switch (title) {
                     case PERSONAL:
-                        writeText(entry, dos, PERSONAL.name());
-                        break;
                     case OBJECTIVE:
-                        writeText(entry, dos, OBJECTIVE.name());
+                        dos.writeUTF(entry.getValue().toString());
                         break;
                     case ACHIEVEMENT:
-                        writeList(entry, dos, ACHIEVEMENT.name());
-                        break;
                     case QUALIFICATIONS:
-                        writeList(entry, dos, QUALIFICATIONS.name());
+                        writeList(entry, dos);
                         break;
                     case EXPERIENCE:
-                        writeTimePeriod(entry, dos, EXPERIENCE.name());
-                        break;
                     case EDUCATION:
-                        writeTimePeriod(entry, dos, EDUCATION.name());
+                        writeTimePeriod(entry, dos);
                         break;
                     default:
                         break;
@@ -69,22 +63,16 @@ public class DataStreamSerializer implements SerializationStrategy {
                 String sectionName = dis.readUTF();
                 switch (sectionName) {
                     case "PERSONAL":
-                        resume.addSection(PERSONAL, new TextOnlySection(dis.readUTF()));
-                        break;
                     case "OBJECTIVE":
-                        resume.addSection(OBJECTIVE, new TextOnlySection(dis.readUTF()));
+                        resume.addSection(SectionType.valueOf(sectionName), new TextOnlySection(dis.readUTF()));
                         break;
                     case "ACHIEVEMENT":
-                        resume.addSection(ACHIEVEMENT, new TextListSection(readList(dis)));
-                        break;
                     case "QUALIFICATIONS":
-                        resume.addSection(QUALIFICATIONS, new TextListSection(readList(dis)));
+                        resume.addSection(SectionType.valueOf(sectionName), new TextListSection(readList(dis)));
                         break;
                     case "EXPERIENCE":
-                        resume.addSection(EXPERIENCE, new TimePeriodSection(readTimePeriod(dis)));
-                        break;
                     case "EDUCATION":
-                        resume.addSection(EDUCATION, new TimePeriodSection(readTimePeriod(dis)));
+                        resume.addSection(SectionType.valueOf(sectionName), new TimePeriodSection(readTimePeriod(dis)));
                         break;
                     default:
                         break;
@@ -94,14 +82,7 @@ public class DataStreamSerializer implements SerializationStrategy {
         }
     }
 
-    private void writeText(Map.Entry<SectionType, AbstractSection> entry, DataOutputStream dos, String title) throws IOException {
-        dos.writeUTF(title);
-        dos.writeUTF(entry.getValue().toString());
-    }
-
-    private void writeList(Map.Entry<SectionType, AbstractSection> entry, DataOutputStream dos, String title) throws IOException {
-        dos.writeUTF(title);
-
+    private void writeList(Map.Entry<SectionType, AbstractSection> entry, DataOutputStream dos) throws IOException {
         TextListSection section = (TextListSection) entry.getValue();
         dos.writeInt(section.getContent().size());
         for (String str : section.getContent()) {
@@ -109,19 +90,16 @@ public class DataStreamSerializer implements SerializationStrategy {
         }
     }
 
-    private void writeTimePeriod(Map.Entry<SectionType, AbstractSection> entry, DataOutputStream dos, String title) throws IOException {
-        dos.writeUTF(title);
-
+    private void writeTimePeriod(Map.Entry<SectionType, AbstractSection> entry, DataOutputStream dos) throws IOException {
         List<TimePeriodOrganisation> organisations = ((TimePeriodSection) entry.getValue()).getContent();
         dos.writeInt(organisations.size());
         for (TimePeriodOrganisation organisation : organisations) {
             dos.writeUTF(organisation.getHomePage().getName());
             String url = organisation.getHomePage().getUrl();
             if(url != null) {
-                dos.writeBoolean(false);
                 dos.writeUTF(url);
             } else {
-                dos.writeBoolean(true);
+                dos.writeUTF("");
             }
 
             List<TimePeriodOrganisation.TimePeriod> periods = organisation.getPeriods();
@@ -132,10 +110,9 @@ public class DataStreamSerializer implements SerializationStrategy {
                 dos.writeUTF(period.getText());
                 String optionalText = period.getOptionalText();
                 if(optionalText != null) {
-                    dos.writeBoolean(false);
                     dos.writeUTF(optionalText);
                 } else {
-                    dos.writeBoolean(true);
+                    dos.writeUTF("");
                 }
             }
         }
@@ -155,16 +132,18 @@ public class DataStreamSerializer implements SerializationStrategy {
         List<TimePeriodOrganisation> organisations = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             String name = dis.readUTF();
-            String url = dis.readBoolean() ? null : dis.readUTF();
+            String url = dis.readUTF();
+            url = url.equals("") ? null : url;
 
             List<TimePeriodOrganisation.TimePeriod> periods = new ArrayList<>();
             int size2 = dis.readInt();
             for (int j = 0; j < size2; j++) {
+                String optionalText;
                 periods.add(new TimePeriodOrganisation.TimePeriod(
                         LocalDate.parse(dis.readUTF()),
                         LocalDate.parse(dis.readUTF()),
                         dis.readUTF(),
-                        dis.readBoolean() ? null : dis.readUTF()
+                        (optionalText = dis.readUTF()).equals("") ? null : optionalText
                 ));
             }
             organisations.add(new TimePeriodOrganisation(new Contact(name, url), periods));
