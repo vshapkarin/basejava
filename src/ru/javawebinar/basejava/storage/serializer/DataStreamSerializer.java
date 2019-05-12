@@ -15,35 +15,31 @@ public class DataStreamSerializer implements SerializationStrategy {
         try (DataOutputStream dos = new DataOutputStream(os)) {
             dos.writeUTF(resume.getUuid());
             dos.writeUTF(resume.getFullName());
-            Map<ContactType, Contact> contacts = resume.getContacts();
-            dos.writeInt(contacts.size());
-            for (Map.Entry<ContactType, Contact> entry : contacts.entrySet()) {
-                dos.writeUTF(entry.getKey().name());
-                dos.writeUTF(entry.getValue().toString());
-            }
+            forEachData(resume.getContacts().entrySet(), dos, a -> {
+                dos.writeUTF(a.getKey().name());
+                dos.writeUTF(a.getValue().toString());
+            });
 
-            Map<SectionType, AbstractSection> sections = resume.getSections();
-            dos.writeInt(sections.size());
-            for (Map.Entry<SectionType, AbstractSection> entry : sections.entrySet()) {
-                SectionType title = entry.getKey();
+            forEachData(resume.getSections().entrySet(), dos, a -> {
+                SectionType title = a.getKey();
                 dos.writeUTF(title.name());
                 switch (title) {
                     case PERSONAL:
                     case OBJECTIVE:
-                        dos.writeUTF(entry.getValue().toString());
+                        dos.writeUTF(a.getValue().toString());
                         break;
                     case ACHIEVEMENT:
                     case QUALIFICATIONS:
-                        writeList(((TextListSection) entry.getValue()).getContent(), dos);
+                        forEachData(((TextListSection) a.getValue()).getContent(), dos, dos::writeUTF);
                         break;
                     case EXPERIENCE:
                     case EDUCATION:
-                        writeTimePeriod(((TimePeriodSection) entry.getValue()).getContent(), dos);
+                        writeTimePeriod(((TimePeriodSection) a.getValue()).getContent(), dos);
                         break;
                     default:
                         break;
                 }
-            }
+            });
         }
     }
 
@@ -83,22 +79,14 @@ public class DataStreamSerializer implements SerializationStrategy {
         }
     }
 
-    private void writeList(List<String> listContent, DataOutputStream dos) throws IOException {
-        dos.writeInt(listContent.size());
-        forEachData(listContent, dos::writeUTF);
-    }
-
     private void writeTimePeriod(List<TimePeriodOrganisation> organisations, DataOutputStream dos) throws IOException {
         UnaryOperator<String> nullWriter = a -> a != null ? a : "";
 
-        dos.writeInt(organisations.size());
-        forEachData(organisations, a -> {
+        forEachData(organisations, dos, a -> {
             dos.writeUTF(a.getHomePage().getName());
             dos.writeUTF(nullWriter.apply(a.getHomePage().getUrl()));
 
-            List<TimePeriodOrganisation.TimePeriod> periods = a.getPeriods();
-            dos.writeInt(periods.size());
-            forEachData(periods, b -> {
+            forEachData(a.getPeriods(), dos, b -> {
                 dos.writeUTF(b.getStart().toString());
                 dos.writeUTF(b.getEnd().toString());
                 dos.writeUTF(b.getText());
@@ -140,8 +128,9 @@ public class DataStreamSerializer implements SerializationStrategy {
         return organisations;
     }
 
-    private <E> void forEachData(Collection<? extends E> collection, IOConsumer<? super E> action) throws IOException {
+    private <E> void forEachData(Collection<? extends E> collection, DataOutputStream dos, IOConsumer<? super E> action) throws IOException {
         Objects.requireNonNull(action);
+        dos.writeInt(collection.size());
         for (E e : collection) {
             action.accept(e);
         }
