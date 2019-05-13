@@ -2,10 +2,14 @@ package ru.javawebinar.basejava.storage.serializer;
 
 import ru.javawebinar.basejava.model.*;
 import ru.javawebinar.basejava.util.IOConsumer;
+import ru.javawebinar.basejava.util.IORunnable;
 
 import java.io.*;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 public class DataStreamSerializer implements SerializationStrategy {
@@ -47,8 +51,8 @@ public class DataStreamSerializer implements SerializationStrategy {
     public Resume doRead(InputStream is) throws IOException {
         try (DataInputStream dis = new DataInputStream(is)) {
             Resume resume = new Resume(dis.readUTF(), dis.readUTF());
-            forRead(dis, a -> resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF()));
-            forRead(dis, a -> {
+            forRead(dis, () -> resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF()));
+            forRead(dis, () -> {
                 SectionType section = SectionType.valueOf(dis.readUTF());
                 switch (section.name()) {
                     case "PERSONAL":
@@ -115,10 +119,10 @@ public class DataStreamSerializer implements SerializationStrategy {
         }
     }
 
-    private void forRead(DataInputStream dis, IOConsumer<?> action) throws IOException {
+    private void forRead(DataInputStream dis, IORunnable action) throws IOException {
         int size = dis.readInt();
         for (int i = 0; i < size; i++) {
-            action.accept(null);
+            action.run();
         }
     }
 
