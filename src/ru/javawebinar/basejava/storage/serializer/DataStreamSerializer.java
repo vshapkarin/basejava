@@ -15,12 +15,12 @@ public class DataStreamSerializer implements SerializationStrategy {
         try (DataOutputStream dos = new DataOutputStream(os)) {
             dos.writeUTF(resume.getUuid());
             dos.writeUTF(resume.getFullName());
-            forEachData(resume.getContacts().entrySet(), dos, a -> {
+            forEachWrite(resume.getContacts().entrySet(), dos, a -> {
                 dos.writeUTF(a.getKey().name());
                 dos.writeUTF(a.getValue().toString());
             });
 
-            forEachData(resume.getSections().entrySet(), dos, a -> {
+            forEachWrite(resume.getSections().entrySet(), dos, a -> {
                 SectionType title = a.getKey();
                 dos.writeUTF(title.name());
                 switch (title) {
@@ -30,7 +30,7 @@ public class DataStreamSerializer implements SerializationStrategy {
                         break;
                     case ACHIEVEMENT:
                     case QUALIFICATIONS:
-                        forEachData(((TextListSection) a.getValue()).getContent(), dos, dos::writeUTF);
+                        forEachWrite(((TextListSection) a.getValue()).getContent(), dos, dos::writeUTF);
                         break;
                     case EXPERIENCE:
                     case EDUCATION:
@@ -46,26 +46,18 @@ public class DataStreamSerializer implements SerializationStrategy {
     @Override
     public Resume doRead(InputStream is) throws IOException {
         try (DataInputStream dis = new DataInputStream(is)) {
-            String uuid = dis.readUTF();
-            String fullName = dis.readUTF();
-            Resume resume = new Resume(uuid, fullName);
-            int size = dis.readInt();
-            for (int i = 0; i < size; i++) {
-                resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF());
-            }
-
-            size = dis.readInt();
-            for (int i = 0; i < size; i++) {
-                String sectionName = dis.readUTF();
-                SectionType section = SectionType.valueOf(sectionName);
-                switch (sectionName) {
+            Resume resume = new Resume(dis.readUTF(), dis.readUTF());
+            forRead(dis, a -> resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF()));
+            forRead(dis, a -> {
+                SectionType section = SectionType.valueOf(dis.readUTF());
+                switch (section.name()) {
                     case "PERSONAL":
                     case "OBJECTIVE":
                         resume.addSection(section, new TextOnlySection(dis.readUTF()));
                         break;
                     case "ACHIEVEMENT":
                     case "QUALIFICATIONS":
-                        resume.addSection(section, new TextListSection(readList(dis)));
+                        resume.addSection(section, new TextListSection(forRead(dis, list -> list.add(dis.readUTF()))));
                         break;
                     case "EXPERIENCE":
                     case "EDUCATION":
@@ -74,7 +66,7 @@ public class DataStreamSerializer implements SerializationStrategy {
                     default:
                         break;
                 }
-            }
+            });
             return resume;
         }
     }
@@ -82,58 +74,54 @@ public class DataStreamSerializer implements SerializationStrategy {
     private void writeTimePeriod(List<TimePeriodOrganisation> organisations, DataOutputStream dos) throws IOException {
         UnaryOperator<String> nullWriter = a -> a != null ? a : "";
 
-        forEachData(organisations, dos, a -> {
-            dos.writeUTF(a.getHomePage().getName());
-            dos.writeUTF(nullWriter.apply(a.getHomePage().getUrl()));
+        forEachWrite(organisations, dos, organisation -> {
+            dos.writeUTF(organisation.getHomePage().getName());
+            dos.writeUTF(nullWriter.apply(organisation.getHomePage().getUrl()));
 
-            forEachData(a.getPeriods(), dos, b -> {
-                dos.writeUTF(b.getStart().toString());
-                dos.writeUTF(b.getEnd().toString());
-                dos.writeUTF(b.getText());
-                dos.writeUTF(nullWriter.apply(b.getOptionalText()));
+            forEachWrite(organisation.getPeriods(), dos, period -> {
+                dos.writeUTF(period.getStart().toString());
+                dos.writeUTF(period.getEnd().toString());
+                dos.writeUTF(period.getText());
+                dos.writeUTF(nullWriter.apply(period.getOptionalText()));
             });
         });
     }
 
-    private List<String> readList(DataInputStream dis) throws IOException {
-        int size = dis.readInt();
-        List<String> list = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            list.add(dis.readUTF());
-        }
-        return list;
-    }
-
     private List<TimePeriodOrganisation> readTimePeriod(DataInputStream dis) throws IOException {
-        int size = dis.readInt();
-        List<TimePeriodOrganisation> organisations = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
+        return forRead(dis, organisations -> {
             String name = dis.readUTF();
             String url = dis.readUTF();
             url = url.equals("") ? null : url;
 
-            List<TimePeriodOrganisation.TimePeriod> periods = new ArrayList<>();
-            int size2 = dis.readInt();
-            for (int j = 0; j < size2; j++) {
-                String optionalText;
-                periods.add(new TimePeriodOrganisation.TimePeriod(
-                        LocalDate.parse(dis.readUTF()),
-                        LocalDate.parse(dis.readUTF()),
-                        dis.readUTF(),
-                        (optionalText = dis.readUTF()).equals("") ? null : optionalText
-                ));
-            }
-            organisations.add(new TimePeriodOrganisation(new Contact(name, url), periods));
-        }
-        return organisations;
+            organisations.add(new TimePeriodOrganisation(
+                    new Contact(name, url),
+                    forRead(dis, periods -> {
+                        String optionalText;
+                        periods.add(new TimePeriodOrganisation.TimePeriod(
+                                LocalDate.parse(dis.readUTF()),
+                                LocalDate.parse(dis.readUTF()),
+                                dis.readUTF(),
+                                (optionalText = dis.readUTF()).equals("") ? null : optionalText));
+                    })
+            ));
+        });
     }
 
-    private <E> void forEachData(Collection<? extends E> collection, DataOutputStream dos, IOConsumer<? super E> action) throws IOException {
+    private <E> void forEachWrite(Collection<? extends E> collection, DataOutputStream dos, IOConsumer<? super E> action) throws IOException {
         Objects.requireNonNull(action);
         dos.writeInt(collection.size());
         for (E e : collection) {
             action.accept(e);
         }
+    }
+
+    private <E> List<E> forRead(DataInputStream dis, IOConsumer<List<E>> action) throws IOException {
+        List<E> list = new ArrayList<>();
+        int size = dis.readInt();
+        for (int i = 0; i < size; i++) {
+            action.accept(list);
+        }
+        return list;
     }
 }
 
