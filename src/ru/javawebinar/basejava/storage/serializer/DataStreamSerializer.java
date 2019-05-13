@@ -47,8 +47,8 @@ public class DataStreamSerializer implements SerializationStrategy {
     public Resume doRead(InputStream is) throws IOException {
         try (DataInputStream dis = new DataInputStream(is)) {
             Resume resume = new Resume(dis.readUTF(), dis.readUTF());
-            forRead(dis, a -> resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF()));
-            forRead(dis, a -> {
+            forRead(dis.readInt(), a -> resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF()));
+            forRead(dis.readInt(), a -> {
                 SectionType section = SectionType.valueOf(dis.readUTF());
                 switch (section.name()) {
                     case "PERSONAL":
@@ -57,7 +57,7 @@ public class DataStreamSerializer implements SerializationStrategy {
                         break;
                     case "ACHIEVEMENT":
                     case "QUALIFICATIONS":
-                        resume.addSection(section, new TextListSection(forRead(dis, list -> list.add(dis.readUTF()))));
+                        resume.addSection(section, new TextListSection(forListRead(dis, list -> list.add(dis.readUTF()))));
                         break;
                     case "EXPERIENCE":
                     case "EDUCATION":
@@ -88,14 +88,14 @@ public class DataStreamSerializer implements SerializationStrategy {
     }
 
     private List<TimePeriodOrganisation> readTimePeriod(DataInputStream dis) throws IOException {
-        return forRead(dis, organisations -> {
+        return forListRead(dis, organisations -> {
             String name = dis.readUTF();
             String url = dis.readUTF();
             url = url.equals("") ? null : url;
 
             organisations.add(new TimePeriodOrganisation(
                     new Contact(name, url),
-                    forRead(dis, periods -> {
+                    forListRead(dis, periods -> {
                         String optionalText;
                         periods.add(new TimePeriodOrganisation.TimePeriod(
                                 LocalDate.parse(dis.readUTF()),
@@ -115,7 +115,13 @@ public class DataStreamSerializer implements SerializationStrategy {
         }
     }
 
-    private <E> List<E> forRead(DataInputStream dis, IOConsumer<List<E>> action) throws IOException {
+    private void forRead(int size, IOConsumer<?> action) throws IOException {
+        for (int i = 0; i < size; i++) {
+            action.accept(null);
+        }
+    }
+
+    private <E> List<E> forListRead(DataInputStream dis, IOConsumer<List<E>> action) throws IOException {
         List<E> list = new ArrayList<>();
         int size = dis.readInt();
         for (int i = 0; i < size; i++) {
