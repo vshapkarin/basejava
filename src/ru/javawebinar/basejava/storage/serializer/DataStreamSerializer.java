@@ -47,8 +47,8 @@ public class DataStreamSerializer implements SerializationStrategy {
     public Resume doRead(InputStream is) throws IOException {
         try (DataInputStream dis = new DataInputStream(is)) {
             Resume resume = new Resume(dis.readUTF(), dis.readUTF());
-            forRead(dis.readInt(), a -> resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF()));
-            forRead(dis.readInt(), a -> {
+            forRead(dis, a -> resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF()));
+            forRead(dis, a -> {
                 SectionType section = SectionType.valueOf(dis.readUTF());
                 switch (section.name()) {
                     case "PERSONAL":
@@ -115,7 +115,8 @@ public class DataStreamSerializer implements SerializationStrategy {
         }
     }
 
-    private void forRead(int size, IOConsumer<?> action) throws IOException {
+    private void forRead(DataInputStream dis, IOConsumer<?> action) throws IOException {
+        int size = dis.readInt();
         for (int i = 0; i < size; i++) {
             action.accept(null);
         }
