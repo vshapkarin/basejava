@@ -1,7 +1,6 @@
 package ru.javawebinar.basejava;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -18,19 +17,14 @@ public class MainStream {
         AtomicInteger increment = new AtomicInteger(-1);
         return Arrays.stream(values)
                 .distinct()
-                .boxed()
-                .sorted(Comparator.reverseOrder())
-                .map(x -> x * (int) Math.pow(10, increment.incrementAndGet()))
-                .reduce(Integer::sum)
-                .get();
+                .map(i -> -i).sorted().map(i -> -i)
+                .reduce(0 ,(acc, x) -> acc + x * (int) Math.pow(10, increment.incrementAndGet()));
     }
 
     private static List<Integer> oddOrEven(List<Integer> integers) {
         AtomicInteger result = new AtomicInteger();
+        result.addAndGet(integers.stream().reduce(0, Integer::sum));
         return integers.stream()
-                .peek(result::addAndGet)
-                .sorted((x, y) -> 0)
-                .filter(x -> (result.get() % 2 == 0) == ((x % 2) != 0))
-                .collect(Collectors.toList());
+                .collect(Collectors.partitioningBy(x -> (result.get() % 2 == 0) == ((x % 2) != 0))).get(true);
     }
 }
