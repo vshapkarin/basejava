@@ -1,8 +1,6 @@
 package ru.javawebinar.basejava.storage.serializer;
 
 import ru.javawebinar.basejava.model.*;
-import ru.javawebinar.basejava.util.IOConsumer;
-import ru.javawebinar.basejava.util.IORunnable;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -92,23 +90,18 @@ public class DataStreamSerializer implements SerializationStrategy {
     }
 
     private List<TimePeriodOrganisation> readTimePeriod(DataInputStream dis) throws IOException {
-        return forListRead(dis, organisations -> {
-            String name = dis.readUTF();
-            String url = dis.readUTF();
-            url = url.equals("") ? null : url;
+        UnaryOperator<String> nullCheck = a -> a.equals("") ? null : a;
 
-            organisations.add(new TimePeriodOrganisation(
-                    new Contact(name, url),
-                    forListRead(dis, periods -> {
-                        String optionalText;
-                        periods.add(new TimePeriodOrganisation.TimePeriod(
+        return forListRead(dis, organisations -> organisations.add(new TimePeriodOrganisation(
+                new Contact(
+                        dis.readUTF(),
+                        nullCheck.apply(dis.readUTF())),
+                        forListRead(dis, periods -> periods.add(new TimePeriodOrganisation.TimePeriod(
                                 LocalDate.parse(dis.readUTF()),
                                 LocalDate.parse(dis.readUTF()),
                                 dis.readUTF(),
-                                (optionalText = dis.readUTF()).equals("") ? null : optionalText));
-                    })
-            ));
-        });
+                                nullCheck.apply(dis.readUTF()))))
+        )));
     }
 
     private <E> void forEachWrite(Collection<? extends E> collection, DataOutputStream dos, IOConsumer<? super E> action) throws IOException {
@@ -134,5 +127,16 @@ public class DataStreamSerializer implements SerializationStrategy {
         }
         return list;
     }
+
+    @FunctionalInterface
+    private interface IOConsumer<T> {
+        void accept(T t) throws IOException;
+    }
+
+    @FunctionalInterface
+    private interface IORunnable {
+        void run() throws IOException;
+    }
+
 }
 
