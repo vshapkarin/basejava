@@ -14,17 +14,17 @@ public class MainStream {
     }
 
     private static int minValue(int[] values) {
-        AtomicInteger increment = new AtomicInteger(-1);
         return Arrays.stream(values)
                 .distinct()
-                .map(i -> -i).sorted().map(i -> -i)
-                .reduce(0 ,(acc, x) -> acc + x * (int) Math.pow(10, increment.incrementAndGet()));
+                .sorted()
+                .reduce(0, (acc, x) -> acc * 10 + x);
     }
 
     private static List<Integer> oddOrEven(List<Integer> integers) {
         AtomicInteger result = new AtomicInteger();
-        result.addAndGet(integers.stream().reduce(0, Integer::sum));
         return integers.stream()
-                .collect(Collectors.partitioningBy(x -> (result.get() % 2 == 0) == ((x % 2) != 0))).get(true);
+                .peek(result::addAndGet)
+                .collect(Collectors.partitioningBy(x -> x % 2 != 0))
+                .get(result.get() % 2 == 0);
     }
 }
