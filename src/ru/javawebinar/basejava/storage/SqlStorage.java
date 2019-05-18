@@ -14,32 +14,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SqlStorage implements Storage {
-    public final ConnectionFactory connectionFactory;
+    private final ConnectionFactory connectionFactory;
+    private final SqlHelper helper;
 
     public SqlStorage(String dbUrl, String dbUser, String dbPassword) {
         connectionFactory = () -> DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+        helper = new SqlHelper(connectionFactory);
     }
 
     @Override
     public void clear() {
-        SqlHelper.setQuery("DELETE FROM resume", connectionFactory, (SqlHelper.SQLConsumer<PreparedStatement>) PreparedStatement::execute);
+        helper.setQuery("DELETE FROM resume", PreparedStatement::execute);
     }
 
     @Override
     public Resume get(String uuid) {
-        return (Resume) SqlHelper.setQuery("SELECT * FROM resume r WHERE r.uuid =?", connectionFactory, ps -> {
+        helper.setQuery("SELECT * FROM resume r WHERE r.uuid =?", ps -> {
             ps.setString(1, uuid);
             ResultSet rs = ps.executeQuery();
             if (!rs.next()) {
                 throw new NotExistStorageException(uuid);
             }
-            return new Resume(uuid, rs.getString("full_name"));
+            helper.setContainer(new Resume(uuid, rs.getString("full_name")));
         });
+        return (Resume) helper.getContainer();
     }
 
     @Override
     public void update(Resume resume) {
-        SqlHelper.setQuery("UPDATE resume SET full_Name=? WHERE uuid=?", connectionFactory, ps -> {
+        helper.setQuery("UPDATE resume SET full_Name=? WHERE uuid=?", ps -> {
             ps.setString(1, resume.getFullName());
             ps.setString(2, resume.getUuid());
             if (ps.executeUpdate() == 0) {
@@ -50,20 +53,22 @@ public class SqlStorage implements Storage {
 
     @Override
     public void save(Resume resume) {
-        SqlHelper.setQuery("INSERT INTO resume (uuid, full_name) VALUES (?,?)", connectionFactory, ps -> {
+        helper.setQuery("INSERT INTO resume (uuid, full_name) VALUES (?,?)", ps -> {
             ps.setString(1, resume.getUuid());
             ps.setString(2, resume.getFullName());
             try {
                 ps.execute();
             } catch (SQLException e) {
-                throw new ExistStorageException(resume.getUuid());
+                if (e.getSQLState().equals("23505")) {
+                    throw new ExistStorageException(resume.getUuid());
+                }
             }
         });
     }
 
     @Override
     public void delete(String uuid) {
-        SqlHelper.setQuery("DELETE FROM resume WHERE uuid=?", connectionFactory, ps -> {
+        helper.setQuery("DELETE FROM resume WHERE uuid=?", ps -> {
             ps.setString(1, uuid);
             if (ps.executeUpdate() == 0) {
                 throw new NotExistStorageException(uuid);
@@ -74,22 +79,24 @@ public class SqlStorage implements Storage {
     @Override
     @SuppressWarnings("unchecked")
     public List<Resume> getAllSorted() {
-        return (List<Resume>) SqlHelper.setQuery("SELECT * FROM resume ORDER BY full_Name, uuid", connectionFactory, ps -> {
+        helper.setQuery("SELECT * FROM resume ORDER BY full_Name, uuid", ps -> {
             ResultSet rs = ps.executeQuery();
             List<Resume> list = new ArrayList<>();
             while (rs.next()) {
                 list.add(new Resume(rs.getString("uuid").trim(), rs.getString("full_name").trim()));
             }
-            return list;
+            helper.setContainer(list);
         });
+        return (List<Resume>) helper.getContainer();
     }
 
     @Override
     public int size() {
-        return (int) SqlHelper.setQuery("SELECT COUNT(*) AS rowcount FROM resume", connectionFactory, ps -> {
+        helper.setQuery("SELECT COUNT(*) AS rowcount FROM resume", ps -> {
             ResultSet rs = ps.executeQuery();
             rs.next();
-            return rs.getInt("rowcount");
+            helper.setContainer(rs.getInt("rowcount"));
         });
+        return (int) helper.getContainer();
     }
 }

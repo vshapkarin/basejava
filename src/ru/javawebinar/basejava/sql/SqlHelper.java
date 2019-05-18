@@ -7,7 +7,15 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class SqlHelper {
-    public static void setQuery(String query, ConnectionFactory connectionFactory, SQLConsumer<PreparedStatement> operation) {
+    private ConnectionFactory connectionFactory;
+    private Object container;
+
+
+    public SqlHelper(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
+
+    public void setQuery(String query, SQLConsumer<PreparedStatement> operation) {
         try (Connection conn = connectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             operation.accept(ps);
@@ -16,23 +24,17 @@ public class SqlHelper {
         }
     }
 
-    public static Object setQuery(String query, ConnectionFactory connectionFactory, SQLFunction<PreparedStatement, Object> operation) {
-        try (Connection conn = connectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-            return operation.apply(ps);
-        } catch (SQLException e) {
-            throw new StorageException(e);
-        }
+    public Object getContainer() {
+        return container;
+    }
+
+    public void setContainer(Object container) {
+        this.container = container;
     }
 
     @FunctionalInterface
-    public interface SQLConsumer<T> {
-        void accept(T t) throws SQLException;
-    }
-
-    @FunctionalInterface
-    public interface SQLFunction<T, R> {
-        R apply(T t) throws SQLException;
+    public interface SQLConsumer<PreparedStatement> {
+        void accept(PreparedStatement ps) throws SQLException;
     }
 }
 
