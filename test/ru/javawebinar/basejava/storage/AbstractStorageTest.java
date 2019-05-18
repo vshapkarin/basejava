@@ -3,6 +3,7 @@ package ru.javawebinar.basejava.storage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.javawebinar.basejava.Config;
 import ru.javawebinar.basejava.exception.ExistStorageException;
 import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.Resume;
@@ -15,7 +16,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 
 public abstract class AbstractStorageTest {
-    protected static final String STORAGE_DIR = "C:\\test\\projects\\storage";
+    protected static final String STORAGE_DIR = Config.get().getStorageDir().getAbsolutePath();
 
     protected Storage storage;
 
