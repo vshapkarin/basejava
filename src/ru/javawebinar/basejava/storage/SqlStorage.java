@@ -1,6 +1,5 @@
 package ru.javawebinar.basejava.storage;
 
-import ru.javawebinar.basejava.exception.ExistStorageException;
 import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.Resume;
 import ru.javawebinar.basejava.sql.SqlHelper;
@@ -8,7 +7,6 @@ import ru.javawebinar.basejava.sql.SqlHelper;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +42,7 @@ public class SqlStorage implements Storage {
             if (ps.executeUpdate() == 0) {
                 throw new NotExistStorageException(resume.getUuid());
             }
-            return 0;
+            return null;
         });
     }
 
@@ -53,14 +51,8 @@ public class SqlStorage implements Storage {
         helper.setQuery("INSERT INTO resume (uuid, full_name) VALUES (?,?)", ps -> {
             ps.setString(1, resume.getUuid());
             ps.setString(2, resume.getFullName());
-            try {
-                ps.execute();
-            } catch (SQLException e) {
-                if (e.getSQLState().equals("23505")) {
-                    throw new ExistStorageException(resume.getUuid());
-                }
-            }
-            return 0;
+            ps.execute();
+            return null;
         });
     }
 
@@ -71,7 +63,7 @@ public class SqlStorage implements Storage {
             if (ps.executeUpdate() == 0) {
                 throw new NotExistStorageException(uuid);
             }
-            return 0;
+            return null;
         });
     }
 
