@@ -8,33 +8,23 @@ import java.sql.SQLException;
 
 public class SqlHelper {
     private ConnectionFactory connectionFactory;
-    private Object container;
-
 
     public SqlHelper(ConnectionFactory connectionFactory) {
         this.connectionFactory = connectionFactory;
     }
 
-    public void setQuery(String query, SQLConsumer<PreparedStatement> operation) {
+    public <R> R setQuery(String query, SQLFunction<PreparedStatement, R> operation) {
         try (Connection conn = connectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
-            operation.accept(ps);
+            return operation.apply(ps);
         } catch (SQLException e) {
             throw new StorageException(e);
         }
     }
 
-    public Object getContainer() {
-        return container;
-    }
-
-    public void setContainer(Object container) {
-        this.container = container;
-    }
-
     @FunctionalInterface
-    public interface SQLConsumer<PreparedStatement> {
-        void accept(PreparedStatement ps) throws SQLException;
+    public interface SQLFunction<PreparedStatement, R> {
+        R apply(PreparedStatement ps) throws SQLException;
     }
 }
 
