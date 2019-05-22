@@ -5,13 +5,13 @@ import java.util.Map;
 public class ResumeTestData {
     public static Resume getResume(String uuid, String fullName) {
         Resume resume = new Resume(uuid, fullName);
-//        resume.addContact(ContactType.TELEPHONE,"+7(921) 855-0482");
-//        resume.addContact(ContactType.SKYPE,"grigory.kislin");
-//        resume.addContact(ContactType.EMAIL,"gkislin@yandex.ru");
-//        resume.addContact(ContactType.LINKEDIN,"");
-//        resume.addContact(ContactType.GITHUB,"");
-//        resume.addContact(ContactType.STACKOVERFLOW,"");
-//        resume.addContact(ContactType.HOMEPAGE,"");
+        resume.addContact(ContactType.TELEPHONE,"+7(921) 855-0482");
+        resume.addContact(ContactType.SKYPE,"grigory.kislin");
+        resume.addContact(ContactType.EMAIL,"gkislin@yandex.ru");
+        resume.addContact(ContactType.LINKEDIN,"");
+        resume.addContact(ContactType.GITHUB,"");
+        resume.addContact(ContactType.STACKOVERFLOW,"");
+        resume.addContact(ContactType.HOMEPAGE,"");
 //
 //        resume.addSection(SectionType.PERSONAL, new TextOnlySection("Аналитический склад ума, сильная логика, креативность, инициативность. Пурист кода и архитектуры."));
 //        resume.addSection(SectionType.OBJECTIVE, new TextOnlySection("Ведущий стажировок и корпоративного обучения по Java Web и Enterprise технологиям"));

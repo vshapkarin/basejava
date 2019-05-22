@@ -1,6 +1,5 @@
 package ru.javawebinar.basejava.sql;
 
-import ru.javawebinar.basejava.exception.ExistStorageException;
 import ru.javawebinar.basejava.exception.StorageException;
 
 import java.sql.Connection;
@@ -14,21 +13,50 @@ public class SqlHelper {
         this.connectionFactory = connectionFactory;
     }
 
-    public <R> R setQuery(String query, SQLFunction<R> operation) {
+    public <T> T setQuery(String query, SQLFunction<T> operation) {
         try (Connection conn = connectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             return operation.apply(ps);
         } catch (SQLException e) {
-            if (e.getSQLState().equals("23505")) {
-                throw new ExistStorageException("");
+            throw ExceptionUtil.convertException(e);
+        }
+    }
+
+    public <T> T setTransaction(SQLTransactionFunction<T> operation) {
+        try (Connection conn = connectionFactory.getConnection()) {
+            try {
+                conn.setAutoCommit(false);
+                T result = operation.apply(conn);
+                conn.commit();
+                return result;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw ExceptionUtil.convertException(e);
             }
+        } catch (SQLException e) {
             throw new StorageException(e);
         }
     }
 
+    public void setPreparedStatement(String query, Connection conn, SQLConsumer operation) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            operation.accept(ps);
+        }
+    }
+
     @FunctionalInterface
-    public interface SQLFunction<R> {
-        R apply(PreparedStatement ps) throws SQLException;
+    public interface SQLFunction<T> {
+        T apply(PreparedStatement ps) throws SQLException;
+    }
+
+    @FunctionalInterface
+    public interface SQLTransactionFunction<T> {
+        T apply(Connection conn) throws SQLException;
+    }
+
+    @FunctionalInterface
+    public interface SQLConsumer {
+        void accept(PreparedStatement ps) throws SQLException;
     }
 }
 
