@@ -38,12 +38,6 @@ public class SqlHelper {
         }
     }
 
-    public void setPreparedStatement(String query, Connection conn, SQLConsumer operation) throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(query)) {
-            operation.accept(ps);
-        }
-    }
-
     @FunctionalInterface
     public interface SQLFunction<T> {
         T apply(PreparedStatement ps) throws SQLException;
@@ -52,11 +46,6 @@ public class SqlHelper {
     @FunctionalInterface
     public interface SQLTransactionFunction<T> {
         T apply(Connection conn) throws SQLException;
-    }
-
-    @FunctionalInterface
-    public interface SQLConsumer {
-        void accept(PreparedStatement ps) throws SQLException;
     }
 }
 
