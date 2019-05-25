@@ -7,9 +7,7 @@ import ru.javawebinar.basejava.model.Resume;
 import ru.javawebinar.basejava.sql.SqlHelper;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SqlStorage implements Storage {
     private final SqlHelper helper;
@@ -97,28 +95,25 @@ public class SqlStorage implements Storage {
     public List<Resume> getAllSorted() {
         return helper.setTransaction(conn -> {
             try (PreparedStatement psResume = conn.prepareStatement("SELECT * FROM resume ORDER BY full_name, uuid")) {
-                List<Resume> resumes = new ArrayList<>();
+                Map<String, Resume> resumes = new LinkedHashMap<>();
                 ResultSet rsResume = psResume.executeQuery();
+                String uuid;
                 while (rsResume.next()) {
-                    resumes.add(new Resume(rsResume.getString("uuid").trim(), rsResume.getString("full_name").trim()));
+                    uuid = rsResume.getString("uuid").trim();
+                    resumes.put(uuid, new Resume(uuid, rsResume.getString("full_name").trim()));
                 }
 
-                try (PreparedStatement psContact = conn.prepareStatement("" +
-                        "SELECT * FROM contact c" +
-                        "    LEFT JOIN resume r" +
-                        "           ON c.resume_uuid = r.uuid" +
-                        "     ORDER BY r.full_name, r.uuid")) {
+                try (PreparedStatement psContact = conn.prepareStatement("SELECT * FROM contact c")) {
                     ResultSet rsContact = psContact.executeQuery();
                     if (rsContact.next()) {
-                        for (Resume resume : resumes) {
-                            while (!rsContact.isAfterLast() && rsContact.getString("resume_uuid").trim().equals(resume.getUuid())) {
-                                resume.addContact(ContactType.valueOf(rsContact.getString("type")), rsContact.getString("value"));
-                                rsContact.next();
-                            }
+                        while (!rsContact.isAfterLast()) {
+                            resumes.get(rsContact.getString("resume_uuid").trim())
+                                    .addContact(ContactType.valueOf(rsContact.getString("type")), rsContact.getString("value"));
+                            rsContact.next();
                         }
                     }
                 }
-                return resumes;
+                return new ArrayList<>(resumes.values());
             }
         });
     }
