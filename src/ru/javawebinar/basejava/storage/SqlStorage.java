@@ -8,7 +8,6 @@ import ru.javawebinar.basejava.sql.SqlHelper;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -97,28 +96,28 @@ public class SqlStorage implements Storage {
     @Override
     public List<Resume> getAllSorted() {
         return helper.setTransaction(conn -> {
-            try (PreparedStatement psResume = conn.prepareStatement("SELECT * FROM resume ORDER BY uuid");
-                 PreparedStatement psContact = conn.prepareStatement("SELECT * FROM contact ORDER BY resume_uuid")) {
-
+            try (PreparedStatement psResume = conn.prepareStatement("SELECT * FROM resume ORDER BY full_name, uuid")) {
                 List<Resume> resumes = new ArrayList<>();
                 ResultSet rsResume = psResume.executeQuery();
-
-                String uuid;
-                Resume resume;
-                ResultSet rsContact = psContact.executeQuery();
-                rsContact.next();
-
                 while (rsResume.next()) {
-                    uuid = rsResume.getString("uuid");
-                    resume = new Resume(uuid.trim(), rsResume.getString("full_name").trim());
-
-                    while(!rsContact.isAfterLast() && rsContact.getString("resume_uuid").equals(uuid)) {
-                        resume.addContact(ContactType.valueOf(rsContact.getString("type")), rsContact.getString("value"));
-                        rsContact.next();
-                    }
-                    resumes.add(resume);
+                    resumes.add(new Resume(rsResume.getString("uuid").trim(), rsResume.getString("full_name").trim()));
                 }
-                Collections.sort(resumes);
+
+                try (PreparedStatement psContact = conn.prepareStatement("" +
+                        "SELECT * FROM contact c" +
+                        "    LEFT JOIN resume r" +
+                        "           ON c.resume_uuid = r.uuid" +
+                        "     ORDER BY r.full_name, r.uuid")) {
+                    ResultSet rsContact = psContact.executeQuery();
+                    if (rsContact.next()) {
+                        for (Resume resume : resumes) {
+                            while (!rsContact.isAfterLast() && rsContact.getString("resume_uuid").trim().equals(resume.getUuid())) {
+                                resume.addContact(ContactType.valueOf(rsContact.getString("type")), rsContact.getString("value"));
+                                rsContact.next();
+                            }
+                        }
+                    }
+                }
                 return resumes;
             }
         });
