@@ -94,27 +94,26 @@ public class SqlStorage implements Storage {
     @Override
     public List<Resume> getAllSorted() {
         return helper.setTransaction(conn -> {
+            Map<String, Resume> resumes = new LinkedHashMap<>();
             try (PreparedStatement psResume = conn.prepareStatement("SELECT * FROM resume ORDER BY full_name, uuid")) {
-                Map<String, Resume> resumes = new LinkedHashMap<>();
                 ResultSet rsResume = psResume.executeQuery();
                 String uuid;
                 while (rsResume.next()) {
                     uuid = rsResume.getString("uuid").trim();
                     resumes.put(uuid, new Resume(uuid, rsResume.getString("full_name").trim()));
                 }
-
-                try (PreparedStatement psContact = conn.prepareStatement("SELECT * FROM contact c")) {
-                    ResultSet rsContact = psContact.executeQuery();
-                    if (rsContact.next()) {
-                        while (!rsContact.isAfterLast()) {
-                            resumes.get(rsContact.getString("resume_uuid").trim())
-                                    .addContact(ContactType.valueOf(rsContact.getString("type")), rsContact.getString("value"));
-                            rsContact.next();
-                        }
+            }
+            try (PreparedStatement psContact = conn.prepareStatement("SELECT * FROM contact c")) {
+                ResultSet rsContact = psContact.executeQuery();
+                if (rsContact.next()) {
+                    while (!rsContact.isAfterLast()) {
+                        resumes.get(rsContact.getString("resume_uuid").trim())
+                                .addContact(ContactType.valueOf(rsContact.getString("type")), rsContact.getString("value"));
+                        rsContact.next();
                     }
                 }
-                return new ArrayList<>(resumes.values());
             }
+            return new ArrayList<>(resumes.values());
         });
     }
 
