@@ -37,15 +37,5 @@ public class SqlHelper {
             throw new StorageException(e);
         }
     }
-
-    @FunctionalInterface
-    public interface SQLFunction<T> {
-        T apply(PreparedStatement ps) throws SQLException;
-    }
-
-    @FunctionalInterface
-    public interface SQLTransactionFunction<T> {
-        T apply(Connection conn) throws SQLException;
-    }
 }
 
