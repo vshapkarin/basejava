@@ -1,8 +1,11 @@
 package ru.javawebinar.basejava.web;
 
+import ru.javawebinar.basejava.Config;
 import ru.javawebinar.basejava.model.Resume;
 import ru.javawebinar.basejava.storage.SqlStorage;
+import ru.javawebinar.basejava.storage.Storage;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +15,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ResumeServlet extends HttpServlet {
+    Storage storage;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        storage = new SqlStorage(Config.get().getDbUrl(), Config.get().getDbUser(), Config.get().getDbPassword());
+    }
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
     }
@@ -21,13 +32,8 @@ public class ResumeServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
 
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
         String uuid = request.getParameter("uuid");
-        Map<String, Resume> resumes = new SqlStorage(getInitParameter("dbURL"), getInitParameter("dbUser"), getInitParameter("dbPassword")).getAllSorted()
+        Map<String, Resume> resumes = storage.getAllSorted()
                 .stream()
                 .collect(Collectors.toMap(Resume::getUuid, r -> r));
 

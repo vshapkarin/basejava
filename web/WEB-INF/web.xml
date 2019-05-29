@@ -7,18 +7,6 @@
     <servlet>
         <servlet-name>resumeServlet</servlet-name>
         <servlet-class>ru.javawebinar.basejava.web.ResumeServlet</servlet-class>
-        <init-param>
-            <param-name>dbUser</param-name>
-            <param-value>postgres</param-value>
-        </init-param>
-        <init-param>
-            <param-name>dbPassword</param-name>
-            <param-value>1234</param-value>
-        </init-param>
-        <init-param>
-            <param-name>dbURL</param-name>
-            <param-value>jdbc:postgresql://localhost:5432/resumes</param-value>
-        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>resumeServlet</servlet-name>

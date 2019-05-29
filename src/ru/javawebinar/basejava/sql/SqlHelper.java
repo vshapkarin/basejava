@@ -11,6 +11,11 @@ public class SqlHelper {
 
     public SqlHelper(ConnectionFactory connectionFactory) {
         this.connectionFactory = connectionFactory;
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public <T> T setQuery(String query, SQLFunction<T> operation) {

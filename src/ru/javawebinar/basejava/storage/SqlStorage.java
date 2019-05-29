@@ -180,7 +180,7 @@ public class SqlStorage implements Storage {
         }
     }
 
-    private void bindContacts(ResultSet rs, SQLSupplier<Resume> resumeSupplier) throws SQLException {
+    private void bindContacts(ResultSet rs, SQLSupplier resumeSupplier) throws SQLException {
         if (rs.next()) {
             do {
                 resumeSupplier.get().addContact(ContactType.valueOf(rs.getString("type")), rs.getString("value"));
@@ -188,7 +188,7 @@ public class SqlStorage implements Storage {
         }
     }
 
-    private void bindSections(ResultSet rs, SQLSupplier<Resume> resumeSupplier) throws SQLException {
+    private void bindSections(ResultSet rs, SQLSupplier resumeSupplier) throws SQLException {
         if (rs.next()) {
             do {
                 SectionType sectionType = SectionType.valueOf(rs.getString("type"));
