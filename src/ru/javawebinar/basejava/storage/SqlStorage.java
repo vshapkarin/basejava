@@ -2,7 +2,7 @@ package ru.javawebinar.basejava.storage;
 
 import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.*;
-import ru.javawebinar.basejava.sql.SQLSupplier;
+import ru.javawebinar.basejava.sql.SQLResultSetFunction;
 import ru.javawebinar.basejava.sql.SqlHelper;
 
 import java.sql.*;
@@ -39,14 +39,12 @@ public class SqlStorage implements Storage {
 
             try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM contact WHERE resume_uuid=?")) {
                 ps.setString(1, uuid);
-                ResultSet rs = ps.executeQuery();
-                bindContacts(rs, () -> resume);
+                bindContacts(ps, rs -> resume);
             }
 
             try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM section WHERE resume_uuid=?")) {
                 ps.setString(1, uuid);
-                ResultSet rs = ps.executeQuery();
-                bindSections(rs, () -> resume);
+                bindSections(ps, rs -> resume);
             }
 
             return resume;
@@ -112,12 +110,10 @@ public class SqlStorage implements Storage {
                 }
             }
             try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM contact")) {
-                ResultSet rs = ps.executeQuery();
-                bindContacts(rs, () -> resumes.get(rs.getString("resume_uuid").trim()));
+                bindContacts(ps, rs -> resumes.get(rs.getString("resume_uuid").trim()));
             }
             try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM section")) {
-                ResultSet rs = ps.executeQuery();
-                bindSections(rs, () -> resumes.get(rs.getString("resume_uuid").trim()));
+                bindSections(ps, rs -> resumes.get(rs.getString("resume_uuid").trim()));
             }
             return new ArrayList<>(resumes.values());
         });
@@ -180,19 +176,21 @@ public class SqlStorage implements Storage {
         }
     }
 
-    private void bindContacts(ResultSet rs, SQLSupplier resumeSupplier) throws SQLException {
+    private void bindContacts(PreparedStatement ps, SQLResultSetFunction resumeSupplier) throws SQLException {
+        ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             do {
-                resumeSupplier.get().addContact(ContactType.valueOf(rs.getString("type")), rs.getString("value"));
+                resumeSupplier.get(rs).addContact(ContactType.valueOf(rs.getString("type")), rs.getString("value"));
             } while (rs.next());
         }
     }
 
-    private void bindSections(ResultSet rs, SQLSupplier resumeSupplier) throws SQLException {
+    private void bindSections(PreparedStatement ps, SQLResultSetFunction resumeSupplier) throws SQLException {
+        ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             do {
                 SectionType sectionType = SectionType.valueOf(rs.getString("type"));
-                Resume resume = resumeSupplier.get();
+                Resume resume = resumeSupplier.get(rs);
                 switch (sectionType) {
                     case PERSONAL:
                     case OBJECTIVE:
