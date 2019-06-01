@@ -1,6 +1,6 @@
 package ru.javawebinar.basejava.model;
 
-import java.util.stream.Collectors;
+import ru.javawebinar.basejava.util.PrintListToHtml;
 
 public enum SectionType {
     PERSONAL("Личные качества") {
@@ -18,13 +18,13 @@ public enum SectionType {
     ACHIEVEMENT("Достижения") {
         @Override
         public String toHtml0(AbstractSection section) {
-            return getHeader(getTitle()) + printListToHtml((TextListSection) section);
+            return getHeader(getTitle()) + PrintListToHtml.listToHtml((TextListSection) section);
         }
     },
     QUALIFICATIONS("Квалификация") {
         @Override
         public String toHtml0(AbstractSection section) {
-            return getHeader(getTitle()) + printListToHtml((TextListSection) section);
+            return getHeader(getTitle()) + PrintListToHtml.listToHtml((TextListSection) section);
         }
     },
     EXPERIENCE("Опыт работы"),
@@ -50,13 +50,5 @@ public enum SectionType {
 
     protected String getHeader(String title) {
         return "<h3>" + title + "</h3>\n";
-    }
-
-    public String printListToHtml(TextListSection section) {
-       return "<ul>" + section.getContent().stream().map(a -> "<li>" + a).collect(Collectors.joining("\n")) + "</ul>";
-    }
-
-    public static String printList(TextListSection section) {
-        return section.getContent().stream().collect(Collectors.joining("\n"));
     }
 }
