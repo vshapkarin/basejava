@@ -43,6 +43,10 @@ public class Resume implements Comparable<Resume>, Serializable {
         return fullName;
     }
 
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
     public Map<ContactType, Contact> getContacts() {
         return contacts;
     }
@@ -53,7 +57,7 @@ public class Resume implements Comparable<Resume>, Serializable {
     }
 
     public String getContact(ContactType type) {
-        return contacts.get(type).toString();
+        return contacts.containsKey(type) ? contacts.get(type).toString() : "";
     }
 
     public AbstractSection getSection(SectionType type) {

@@ -4,6 +4,7 @@ import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.*;
 import ru.javawebinar.basejava.sql.SQLResultSetFunction;
 import ru.javawebinar.basejava.sql.SqlHelper;
+import ru.javawebinar.basejava.util.JsonParser;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -143,26 +144,9 @@ public class SqlStorage implements Storage {
     private void insertSections(Connection conn, Resume resume) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement("INSERT INTO section (resume_uuid, type, content) VALUES (?,?,?)")) {
             for (Map.Entry<SectionType, AbstractSection> e : resume.getSections().entrySet()) {
-                String sectionName = e.getKey().name();
-                String content;
-                switch (sectionName) {
-                    case "PERSONAL":
-                    case "OBJECTIVE":
-                        content = e.getValue().toString();
-                        break;
-                    case "ACHIEVEMENT":
-                    case "QUALIFICATIONS":
-                        content = String.join("\n", ((TextListSection) e.getValue()).getContent());
-                        break;
-                    default:
-                        content = null;
-                        sectionName = null;
-                        break;
-                }
-
                 ps.setString(1, resume.getUuid());
-                ps.setString(2, sectionName);
-                ps.setString(3, content);
+                ps.setString(2, e.getKey().name());
+                ps.setString(3, JsonParser.write(e.getValue(), AbstractSection.class));
                 ps.addBatch();
             }
             ps.executeBatch();
@@ -191,18 +175,7 @@ public class SqlStorage implements Storage {
             do {
                 SectionType sectionType = SectionType.valueOf(rs.getString("type"));
                 Resume resume = resumeSupplier.get(rs);
-                switch (sectionType) {
-                    case PERSONAL:
-                    case OBJECTIVE:
-                        resume.addSection(sectionType, new TextOnlySection(rs.getString("content")));
-                        break;
-                    case ACHIEVEMENT:
-                    case QUALIFICATIONS:
-                        resume.addSection(sectionType, new TextListSection(rs.getString("content").split("\n")));
-                        break;
-                    default:
-                        break;
-                }
+                resume.addSection(sectionType, JsonParser.read(rs.getString("content"), AbstractSection.class));
             } while (rs.next());
         }
 
