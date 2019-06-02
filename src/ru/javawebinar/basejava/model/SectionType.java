@@ -1,6 +1,6 @@
 package ru.javawebinar.basejava.model;
 
-import ru.javawebinar.basejava.util.PrintListToHtml;
+import ru.javawebinar.basejava.util.PrintSectionToHtml;
 
 public enum SectionType {
     PERSONAL("Личные качества") {
@@ -18,17 +18,27 @@ public enum SectionType {
     ACHIEVEMENT("Достижения") {
         @Override
         public String toHtml0(AbstractSection section) {
-            return getHeader(getTitle()) + PrintListToHtml.listToHtml((TextListSection) section);
+            return getHeader(getTitle()) + PrintSectionToHtml.listToHtml((TextListSection) section);
         }
     },
     QUALIFICATIONS("Квалификация") {
         @Override
         public String toHtml0(AbstractSection section) {
-            return getHeader(getTitle()) + PrintListToHtml.listToHtml((TextListSection) section);
+            return getHeader(getTitle()) + PrintSectionToHtml.listToHtml((TextListSection) section);
         }
     },
-    EXPERIENCE("Опыт работы"),
-    EDUCATION("Образование");
+    EXPERIENCE("Опыт работы") {
+        @Override
+        public String toHtml0(AbstractSection section) {
+            return getHeader(getTitle()) + PrintSectionToHtml.organisationsToHtml((TimePeriodSection) section);
+        }
+    },
+    EDUCATION("Образование") {
+        @Override
+        public String toHtml0(AbstractSection section) {
+            return getHeader(getTitle()) + PrintSectionToHtml.organisationsToHtml((TimePeriodSection) section);
+        }
+    };
 
     private String title;
 

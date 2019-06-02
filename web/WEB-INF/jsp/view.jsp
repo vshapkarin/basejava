@@ -22,7 +22,6 @@
             <jsp:useBean id="sectionEntry"
                          type="java.util.Map.Entry<ru.javawebinar.basejava.model.SectionType, ru.javawebinar.basejava.model.AbstractSection>"/>
                 <%=sectionEntry.getKey().toHtml(sectionEntry.getValue())%><br/>
-
         </c:forEach>
 </section>
 <jsp:include page="fragments/footer.jsp"/>

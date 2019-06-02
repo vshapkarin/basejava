@@ -1,6 +1,6 @@
 <%@ page import="ru.javawebinar.basejava.model.ContactType" %>
 <%@ page import="ru.javawebinar.basejava.model.SectionType" %>
-<%@ page import="ru.javawebinar.basejava.util.PrintListToHtml" %>
+<%@ page import="ru.javawebinar.basejava.util.PrintSectionToHtml" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
@@ -21,23 +21,26 @@
         </dl>
         <h3>Контакты:</h3>
         <c:forEach var="type" items="${ContactType.values()}">
+            <c:set var="contact" value="${resume.getContact(type)}"/>
             <dl>
                 <dt>${type.title}</dt>
-                <dd><input type="text" name="${type.name()}" size=30 value="${resume.getContact(type)}"></dd>
+                <dd><input type="text" name="${type.name()}" size=30 value="${contact == null ? "" : contact}"></dd>
             </dl>
         </c:forEach>
 
         <h3>Секции:</h3>
-        <c:forEach var="type" items="${resume.sections.keySet()}">
+        <c:forEach var="type" items="${SectionType.values()}">
+            <c:set var="section" value="${resume.getSection(type)}"/>
             <dl>
-                <dt>${type.title}</dt>
                 <dd>
                 <c:choose>
                     <c:when test="${type == SectionType.PERSONAL || type == SectionType.OBJECTIVE}">
-                            <textarea rows="3" cols="100" name="${type}">${resume.getSection(type).toString()}</textarea>
+                            <dt>${type.title}</dt>
+                            <textarea rows="3" cols="100" name="${type}">${section == null ? "" :  section.toString()}</textarea>
                     </c:when>
                     <c:when test="${type == SectionType.ACHIEVEMENT || type == SectionType.QUALIFICATIONS}">
-                            <textarea rows="10" cols="150" name="${type}">${PrintListToHtml.listToString(resume.getSection(type))}</textarea>
+                            <dt>${type.title}</dt>
+                            <textarea rows="10" cols="150" name="${type}">${section == null ? "" : PrintSectionToHtml.listToString(section)}</textarea>
                     </c:when>
                 </c:choose>
                 </dd>
