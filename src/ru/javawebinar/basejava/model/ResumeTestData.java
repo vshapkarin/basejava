@@ -40,7 +40,7 @@ public class ResumeTestData {
                 "Отличное знание и опыт применения концепций ООП, SOA, шаблонов проектрирования, архитектурных шаблонов, UML, функционального программирования",
                 "Родной русский, английский \"upper intermediate\""));
         resume.addSection(SectionType.EXPERIENCE, new TimePeriodSection(
-                new TimePeriodOrganisation("Java Online Projects", null,
+                new TimePeriodOrganisation("Java Online Projects", "http://javaops.ru",
                         new TimePeriodOrganisation.TimePeriod(LocalDate.of(2013, 10, 1),
                                 DateUtil.NOW,
                                 "Автор проекта",
@@ -57,7 +57,7 @@ public class ResumeTestData {
                                 "Организация процесса разработки системы ERP для разных окружений: релизная политика, версионирование, ведение CI (Jenkins), миграция базы (кастомизация Flyway), конфигурирование системы (pgBoucer, Nginx), AAA via SSO. Архитектура БД и серверной части системы. Разработка интергационных сервисов: CMIS, BPMN2, 1C (WebServices), сервисов общего назначения (почта, экспорт в pdf, doc, html). Интеграция Alfresco JLAN для online редактирование из браузера документов MS Office. Maven + plugin development, Ant, Apache Commons, Spring security, Spring MVC, Tomcat,WSO2, xcmis, OpenCmis, Bonita, Python scripting, Unix shell remote scripting via ssh tunnels, PL/Python"))
         ));
         resume.addSection(SectionType.EDUCATION, new TimePeriodSection(
-                new TimePeriodOrganisation("Coursera", "coursera.com",
+                new TimePeriodOrganisation("Coursera", "http://coursera.com",
                         new TimePeriodOrganisation.TimePeriod(LocalDate.of(2013, 3, 1),
                                 LocalDate.of(2013, 5, 1),
                                 "\"Functional Programming Principles in Scala\" by Martin Odersky", null)),

@@ -4,6 +4,8 @@ import ru.javawebinar.basejava.Config;
 import ru.javawebinar.basejava.model.*;
 import ru.javawebinar.basejava.storage.SqlStorage;
 import ru.javawebinar.basejava.storage.Storage;
+import ru.javawebinar.basejava.util.PrintSectionToHtml;
+import ru.javawebinar.basejava.util.TimePeriodColumnType;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -11,6 +13,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class ResumeServlet extends HttpServlet {
     Storage storage;
@@ -38,7 +43,7 @@ public class ResumeServlet extends HttpServlet {
         for (SectionType type : SectionType.values()) {
             String value = request.getParameter(type.name());
             if (value != null && value.trim().length() != 0) {
-                switch(type) {
+                switch (type) {
                     case PERSONAL:
                     case OBJECTIVE:
                         resume.addSection(type, new TextOnlySection(value));
@@ -46,6 +51,19 @@ public class ResumeServlet extends HttpServlet {
                     case ACHIEVEMENT:
                     case QUALIFICATIONS:
                         resume.addSection(type, new TextListSection(value.split("\n")));
+                        break;
+                    case EXPERIENCE:
+                    case EDUCATION:
+                        Scanner scanner = new Scanner(value);
+                        List<TimePeriodOrganisation> organisations = new ArrayList<>();
+                        String column;
+                        while (scanner.hasNextLine() && (column = scanner.nextLine()).startsWith(TimePeriodColumnType.ORGANISATION.getTitle())) {
+                            organisations.add(new TimePeriodOrganisation(new Contact(column.substring(TimePeriodColumnType.ORGANISATION.getTitleLength()),
+                                    (column = scanner.nextLine().substring(TimePeriodColumnType.URL.getTitleLength())).equals("null") ? null : column),
+                                    PrintSectionToHtml.parsePeriods(scanner)));
+                        }
+                        resume.addSection(type, new TimePeriodSection(organisations));
+                        scanner.close();
                         break;
                     default:
                         break;

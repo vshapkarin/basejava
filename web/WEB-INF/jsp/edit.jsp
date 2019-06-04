@@ -33,14 +33,19 @@
             <c:set var="section" value="${resume.getSection(type)}"/>
             <dl>
                 <dd>
+                <dt>${type.title}</dt>
                 <c:choose>
                     <c:when test="${type == SectionType.PERSONAL || type == SectionType.OBJECTIVE}">
-                            <dt>${type.title}</dt>
-                            <textarea rows="3" cols="100" name="${type}">${section == null ? "" :  section.toString()}</textarea>
+                        <textarea rows="3" cols="100"
+                                  name="${type}">${section == null ? "" :  section.toString()}</textarea>
                     </c:when>
                     <c:when test="${type == SectionType.ACHIEVEMENT || type == SectionType.QUALIFICATIONS}">
-                            <dt>${type.title}</dt>
-                            <textarea rows="10" cols="150" name="${type}">${section == null ? "" : PrintSectionToHtml.listToString(section)}</textarea>
+                        <textarea rows="10" cols="150"
+                                  name="${type}">${section == null ? "" : PrintSectionToHtml.listToString(section)}</textarea>
+                    </c:when>
+                    <c:when test="${type == SectionType.EXPERIENCE || type == SectionType.EDUCATION}">
+                        <textarea rows="10" cols="150"
+                                  name="${type}">${section == null ? "" : PrintSectionToHtml.organisationsToString(section)}</textarea>
                     </c:when>
                 </c:choose>
                 </dd>
