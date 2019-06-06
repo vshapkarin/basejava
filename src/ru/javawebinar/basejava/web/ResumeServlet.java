@@ -1,6 +1,7 @@
 package ru.javawebinar.basejava.web;
 
 import ru.javawebinar.basejava.Config;
+import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.*;
 import ru.javawebinar.basejava.storage.SqlStorage;
 import ru.javawebinar.basejava.storage.Storage;
@@ -12,21 +13,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.UUID;
 
 public class ResumeServlet extends HttpServlet {
     private Storage storage;
-    private Function<String, LocalDate> dateParser;
     private TimePeriodOrganisation.TimePeriod emptyPeriod;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         storage = new SqlStorage(Config.get().getDbUrl(), Config.get().getDbUser(), Config.get().getDbPassword());
-        dateParser = date -> date.equals("") ? DateUtil.NOW : LocalDate.parse(date);
         emptyPeriod = new TimePeriodOrganisation.TimePeriod(DateUtil.NOW, DateUtil.NOW, "", "");
     }
 
@@ -34,12 +32,17 @@ public class ResumeServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String uuid = request.getParameter("uuid");
         String fullName = request.getParameter("fullName");
+        Resume resume;
+        try {
+            resume = storage.get(uuid);
+        } catch (NotExistStorageException e) {
+            storage.save(resume = new Resume(uuid, fullName));
+        }
+        resume.setFullName(fullName);
         String addOrganisation = request.getParameter("addOrganisation");
         String addPeriod = request.getParameter("addPeriod");
         String deleteOrganisation = request.getParameter("deleteOrganisation");
         String deletePeriod = request.getParameter("deletePeriod");
-        Resume resume = storage.get(uuid);
-        resume.setFullName(fullName);
         for (ContactType type : ContactType.values()) {
             String value = request.getParameter(type.name());
             if (value != null && value.trim().length() != 0) {
@@ -82,8 +85,8 @@ public class ResumeServlet extends HttpServlet {
                                             && startDates.length > 1) {
                                         continue;
                                     }
-                                    periods.add(new TimePeriodOrganisation.TimePeriod(dateParser.apply(startDates[j]),
-                                            dateParser.apply(endDates[j]),
+                                    periods.add(new TimePeriodOrganisation.TimePeriod(DateUtil.parseDate(startDates[j]),
+                                            DateUtil.parseDate(endDates[j]),
                                             texts[j],
                                             optionalTexts[j]));
                                 }
@@ -110,7 +113,7 @@ public class ResumeServlet extends HttpServlet {
                 || addPeriod != null
                 || deleteOrganisation != null
                 || deletePeriod != null
-                ? "resume?uuid=" + uuid + "&action=edit"
+                ? "resume?uuid=" + uuid + "&action=edit#orgs"
                 : "resume");
     }
 
@@ -129,12 +132,15 @@ public class ResumeServlet extends HttpServlet {
                 response.sendRedirect("resume");
                 return;
             case "create":
-                storage.save(new Resume("New user"));
-                response.sendRedirect("resume");
+                response.sendRedirect("resume?uuid=" + UUID.randomUUID().toString() + "&action=edit");
                 return;
             case "view":
             case "edit":
-                resume = storage.get(uuid);
+                try {
+                    resume = storage.get(uuid);
+                } catch (NotExistStorageException e) {
+                    resume = new Resume(uuid, "New resume");
+                }
                 break;
             default:
                 throw new IllegalArgumentException("Action " + action + " is illegal");

@@ -43,6 +43,7 @@
                                   name="${type}">${section == null ? "" : PrintSectionToHtml.listToString(section)}</textarea>
                     </c:when>
                     <c:when test="${type == SectionType.EXPERIENCE || type == SectionType.EDUCATION}">
+                        <div id="orgs"></div>
                         <input hidden name="${type}" value="0"/>
                         <br>
                         <c:forEach var="organisation" items="${section.content}"
@@ -101,7 +102,7 @@
         </c:forEach>
         <hr>
         <button type="submit">Сохранить</button>
-        <button onclick="window.history.back()">Отменить</button>
+        <button type="reset" onclick="window.history.back()">Отменить</button>
     </form>
 </section>
 <jsp:include page="fragments/footer.jsp"/>
