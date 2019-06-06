@@ -4,8 +4,7 @@ import ru.javawebinar.basejava.Config;
 import ru.javawebinar.basejava.model.*;
 import ru.javawebinar.basejava.storage.SqlStorage;
 import ru.javawebinar.basejava.storage.Storage;
-import ru.javawebinar.basejava.util.PrintSectionToHtml;
-import ru.javawebinar.basejava.util.TimePeriodColumnType;
+import ru.javawebinar.basejava.util.DateUtil;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -13,23 +12,32 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.function.Function;
 
 public class ResumeServlet extends HttpServlet {
-    Storage storage;
+    private Storage storage;
+    private Function<String, LocalDate> dateParser;
+    private TimePeriodOrganisation.TimePeriod emptyPeriod;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         storage = new SqlStorage(Config.get().getDbUrl(), Config.get().getDbUser(), Config.get().getDbPassword());
+        dateParser = date -> date.equals("") ? DateUtil.NOW : LocalDate.parse(date);
+        emptyPeriod = new TimePeriodOrganisation.TimePeriod(DateUtil.NOW, DateUtil.NOW, "", "");
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         String uuid = request.getParameter("uuid");
         String fullName = request.getParameter("fullName");
+        String addOrganisation = request.getParameter("addOrganisation");
+        String addPeriod = request.getParameter("addPeriod");
+        String deleteOrganisation = request.getParameter("deleteOrganisation");
+        String deletePeriod = request.getParameter("deletePeriod");
         Resume resume = storage.get(uuid);
         resume.setFullName(fullName);
         for (ContactType type : ContactType.values()) {
@@ -54,16 +62,41 @@ public class ResumeServlet extends HttpServlet {
                         break;
                     case EXPERIENCE:
                     case EDUCATION:
-                        Scanner scanner = new Scanner(value);
-                        List<TimePeriodOrganisation> organisations = new ArrayList<>();
-                        String column;
-                        while (scanner.hasNextLine() && (column = scanner.nextLine()).startsWith(TimePeriodColumnType.ORGANISATION.getTitle())) {
-                            organisations.add(new TimePeriodOrganisation(new Contact(column.substring(TimePeriodColumnType.ORGANISATION.getTitleLength()),
-                                    (column = scanner.nextLine().substring(TimePeriodColumnType.URL.getTitleLength())).equals("null") ? null : column),
-                                    PrintSectionToHtml.parsePeriods(scanner)));
+                        String[] organisations = request.getParameterValues(type.name() + " organisationName");
+                        String[] urls = request.getParameterValues(type.name() + " url");
+                        List<TimePeriodOrganisation> organisationList = new ArrayList<>();
+                        if (organisations != null) {
+                            for (int i = 0; i < organisations.length; i++) {
+                                if (deleteOrganisation != null
+                                        && deleteOrganisation.equals(type.name() + " organisationID=" + i)) {
+                                    continue;
+                                }
+                                String[] startDates = request.getParameterValues(type.name() + " organisationID=" + i + " startDate");
+                                String[] endDates = request.getParameterValues(type.name() + " organisationID=" + i + " endDate");
+                                String[] texts = request.getParameterValues(type.name() + " organisationID=" + i + " text");
+                                String[] optionalTexts = request.getParameterValues(type.name() + " organisationID=" + i + " optionalText");
+                                List<TimePeriodOrganisation.TimePeriod> periods = new ArrayList<>();
+                                for (int j = 0; j < startDates.length; j++) {
+                                    if (deletePeriod != null
+                                            && deletePeriod.equals(type.name() + " organisationID=" + i + " periodID=" + j)
+                                            && startDates.length > 1) {
+                                        continue;
+                                    }
+                                    periods.add(new TimePeriodOrganisation.TimePeriod(dateParser.apply(startDates[j]),
+                                            dateParser.apply(endDates[j]),
+                                            texts[j],
+                                            optionalTexts[j]));
+                                }
+                                if (addPeriod != null && addPeriod.equals(type.name() + " organisationID=" + i)) {
+                                    periods.add(emptyPeriod);
+                                }
+                                organisationList.add(new TimePeriodOrganisation(new Contact(organisations[i], urls[i]), periods));
+                            }
                         }
-                        resume.addSection(type, new TimePeriodSection(organisations));
-                        scanner.close();
+                        if (addOrganisation != null && addOrganisation.equals(type.name())) {
+                            organisationList.add(new TimePeriodOrganisation("", "", emptyPeriod));
+                        }
+                        resume.addSection(type, new TimePeriodSection(organisationList));
                         break;
                     default:
                         break;
@@ -73,7 +106,12 @@ public class ResumeServlet extends HttpServlet {
             }
         }
         storage.update(resume);
-        response.sendRedirect("resume");
+        response.sendRedirect(addOrganisation != null
+                || addPeriod != null
+                || deleteOrganisation != null
+                || deletePeriod != null
+                ? "resume?uuid=" + uuid + "&action=edit"
+                : "resume");
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

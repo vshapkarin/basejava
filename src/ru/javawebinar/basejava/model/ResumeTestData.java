@@ -3,7 +3,6 @@ package ru.javawebinar.basejava.model;
 import ru.javawebinar.basejava.util.DateUtil;
 
 import java.time.LocalDate;
-import java.util.Map;
 
 public class ResumeTestData {
     public static Resume getResume(String uuid, String fullName) {
@@ -75,7 +74,8 @@ public class ResumeTestData {
                                 "Инженер (программист Fortran, C)", null),
                         new TimePeriodOrganisation.TimePeriod(LocalDate.of(1993, 9, 1),
                                 LocalDate.of(1996, 7, 1),
-                                "Аспирантура (программист С, С++)", null))));
+                                "Аспирантура (программист С, С++)", null))
+        ));
 
         return resume;
     }
@@ -84,36 +84,8 @@ public class ResumeTestData {
         Resume resume = getResume("11", "Григорий");
 
         System.out.printf("%s\n\n", resume.getFullName());
-
-        for (Map.Entry<ContactType, Contact> entry : resume.getContacts().entrySet()) {
-            System.out.println(entry.getKey().getTitle() + " " + entry.getValue());
-        }
-
+        resume.getContacts().forEach((key, value) -> System.out.println(key.getTitle() + " " + value));
         System.out.println();
-
-        for (Map.Entry<SectionType, AbstractSection> entry : resume.getSections().entrySet()) {
-            switch (entry.getKey()) {
-                case PERSONAL:
-                    System.out.printf("%s:\n%s\n\n", SectionType.PERSONAL.getTitle(), entry.getValue());
-                    break;
-                case OBJECTIVE:
-                    System.out.printf("%s:\n%s\n\n", SectionType.OBJECTIVE.getTitle(), entry.getValue());
-                    break;
-                case ACHIEVEMENT:
-                    System.out.printf("%s:\n%s\n\n", SectionType.ACHIEVEMENT.getTitle(), entry.getValue());
-                    break;
-                case QUALIFICATIONS:
-                    System.out.printf("%s:\n%s\n\n", SectionType.QUALIFICATIONS.getTitle(), entry.getValue());
-                    break;
-                case EXPERIENCE:
-                    System.out.printf("%s:\n%s\n\n", SectionType.EXPERIENCE.getTitle(), entry.getValue());
-                    break;
-                case EDUCATION:
-                    System.out.printf("%s:\n%s\n\n", SectionType.EDUCATION.getTitle(), entry.getValue());
-                    break;
-                default:
-                    break;
-            }
-        }
+        resume.getSections().forEach((key, value) -> System.out.printf("%s:\n%s\n\n", key.getTitle(), value));
     }
 }
